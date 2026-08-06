@@ -13,6 +13,14 @@ const STATUS = {
   offline: { label: 'Ngoại tuyến', color: '#9b9ba5' }
 }
 
+// Màu viền avatar theo trạng thái (Discord colors chuẩn)
+const AVATAR_COLOR = {
+  online: '#3BA55B',
+  idle: '#FAA61A',
+  dnd: '#F04747',
+  offline: '#747F8D'
+}
+
 export const DiscordDot = ({ color, pulse = false, size = 10 }) => (
   <motion.span
     animate={pulse ? { scale: [1, 1.4, 1] } : { scale: 1 }}
@@ -67,6 +75,8 @@ const StatusBar = () => {
   const presence = useDiscordPresence(DISCORD_USER_ID)
   const bg = useColorModeValue('whiteAlpha.500', 'whiteAlpha.200')
   const muted = useColorModeValue('gray.600', 'whiteAlpha.700')
+  const pillBg = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
+  const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
 
   if (!presence) {
     return (
@@ -86,6 +96,8 @@ const StatusBar = () => {
   }
 
   const status = STATUS[presence.discord_status] || STATUS.offline
+  const avatarColor =
+    AVATAR_COLOR[presence.discord_status] || AVATAR_COLOR.offline
   const activity = getActivityText(presence)
   const online = presence.discord_status === 'online'
   const user = presence.discord_user || {}
@@ -122,12 +134,21 @@ const StatusBar = () => {
               w="48px"
               h="48px"
               borderRadius="full"
-              border="2px solid rgba(255,255,255,0.4)"
+              border="2px solid"
+              borderColor={avatarColor}
               objectFit="cover"
               flexShrink={0}
             />
           ) : (
-            <Box w="48px" h="48px" borderRadius="full" bg="whiteAlpha.200" flexShrink={0} />
+            <Box
+              w="48px"
+              h="48px"
+              borderRadius="full"
+              border="2px solid"
+              borderColor={avatarColor}
+              bg="whiteAlpha.200"
+              flexShrink={0}
+            />
           )}
           <Box lineHeight="1.15">
             <Flex alignItems="center" columnGap={2} flexWrap="wrap" justifyContent={{ base: 'center', sm: 'flex-start' }}>
@@ -143,7 +164,9 @@ const StatusBar = () => {
                   px={1.5}
                   py="1px"
                   borderRadius="full"
-                  bg="whiteAlpha.200"
+                  bg={pillBg}
+                  border="1px solid"
+                  borderColor={pillBorder}
                 >
                   <Box
                     as="img"
