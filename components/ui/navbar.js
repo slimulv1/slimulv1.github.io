@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react'
 import ThemeToggleButton from './theme-toggle-button'
 import VnClock from './vn-clock'
+import StatusDot from './status-dot'
 
 const Navbar = props => {
   return (
@@ -38,6 +39,7 @@ const Navbar = props => {
         </Flex>
 
         <Flex alignItems="center" columnGap={2}>
+          <StatusDot />
           <VnClock />
           <ThemeToggleButton />
         </Flex>

@@ -1,0 +1,219 @@
+import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
+import { motion } from 'framer-motion'
+import {
+  useDiscordPresence,
+  DISCORD_USER_ID
+} from '../../lib/use-discord-presence'
+import { DiscordBadges } from './discord-badges'
+
+const STATUS = {
+  online: { label: 'Trực tuyến', color: '#73daca' },
+  idle: { label: 'Chờ chút', color: '#faa61a' },
+  dnd: { label: 'Không làm phiền', color: '#f04747' },
+  offline: { label: 'Ngoại tuyến', color: '#9b9ba5' }
+}
+
+export const DiscordDot = ({ color, pulse = false, size = 10 }) => (
+  <motion.span
+    animate={pulse ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+    transition={
+      pulse
+        ? { repeat: Infinity, duration: 2, ease: 'easeInOut' }
+        : { duration: 0.2 }
+    }
+    style={{
+      display: 'inline-block',
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      background: color,
+      boxShadow: `0 0 8px ${color}`,
+      marginRight: 6,
+      flexShrink: 0,
+      verticalAlign: 'middle'
+    }}
+  />
+)
+
+const getActivityText = presence => {
+  if (!presence) return null
+
+  const spotify = presence.spotify && presence.listening_to_spotify
+  const game = presence.activities?.find(a => a.type === 0)
+  const custom = presence.activities?.find(a => a.type === 4)
+
+  if (spotify) {
+    return {
+      icon: '🎵',
+      text: `Đang nghe: ${spotify.song} - ${spotify.artist}`,
+      sub: spotify.album,
+      art: spotify.album_art_url
+    }
+  }
+  if (game) {
+    return {
+      icon: '🎮',
+      text: `Đang chơi: ${game.name}`,
+      sub: game.details || game.state || null
+    }
+  }
+  if (custom && custom.state) {
+    return { icon: '✨', text: custom.state }
+  }
+  return null
+}
+
+const StatusBar = () => {
+  const presence = useDiscordPresence(DISCORD_USER_ID)
+  const bg = useColorModeValue('whiteAlpha.500', 'whiteAlpha.200')
+  const muted = useColorModeValue('gray.600', 'whiteAlpha.700')
+
+  if (!presence) {
+    return (
+      <Box
+        borderRadius="lg"
+        mb={6}
+        p={3}
+        textAlign="center"
+        bg={bg}
+        css={{ backdropFilter: 'blur(10px)' }}
+      >
+        <Text fontSize="sm" opacity={0.8}>
+          Đang kết nối trạng thái Discord...
+        </Text>
+      </Box>
+    )
+  }
+
+  const status = STATUS[presence.discord_status] || STATUS.offline
+  const activity = getActivityText(presence)
+  const online = presence.discord_status === 'online'
+  const user = presence.discord_user || {}
+  const avatar = user.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
+    : null
+  const guild = user.primary_guild
+  const name = user.display_name || user.global_name || user.username || 'Discord'
+  const subName = user.username ? `@${user.username}` : ''
+
+  return (
+    <Box
+      borderRadius="lg"
+      mb={6}
+      p={3}
+      bg={bg}
+      css={{ backdropFilter: 'blur(10px)' }}
+    >
+      <Flex
+        alignItems="center"
+        justifyContent="space-between"
+        flexWrap="wrap"
+        rowGap={2}
+        columnGap={4}
+        textAlign={{ base: 'center', sm: 'left' }}
+      >
+        {/* BÊN TRÁI: avatar + tên */}
+        <Flex alignItems="center" columnGap={3}>
+          {avatar ? (
+            <Box
+              as="img"
+              src={avatar}
+              alt="Discord avatar"
+              w="48px"
+              h="48px"
+              borderRadius="full"
+              border="2px solid rgba(255,255,255,0.4)"
+              objectFit="cover"
+              flexShrink={0}
+            />
+          ) : (
+            <Box w="48px" h="48px" borderRadius="full" bg="whiteAlpha.200" flexShrink={0} />
+          )}
+          <Box lineHeight="1.15">
+            <Flex alignItems="center" columnGap={2} flexWrap="wrap" justifyContent={{ base: 'center', sm: 'flex-start' }}>
+              <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
+                {name}
+              </Text>
+              <DiscordBadges publicFlags={user.public_flags} />
+              {guild && guild.identity_enabled ? (
+                <Flex
+                  alignItems="center"
+                  columnGap={1}
+                  title={`Server profile: ${guild.tag}`}
+                  px={1.5}
+                  py="1px"
+                  borderRadius="full"
+                  bg="whiteAlpha.200"
+                >
+                  <Box
+                    as="img"
+                    src="/images/badge-clan.png"
+                    alt=""
+                    w="16px"
+                    h="16px"
+                    flexShrink={0}
+                    css={{ display: 'inline-block' }}
+                  />
+                  <Text fontSize="xs" fontWeight="semibold" opacity={0.9} whiteSpace="nowrap">
+                    {guild.tag}
+                  </Text>
+                </Flex>
+              ) : null}
+            </Flex>
+            {subName ? (
+              <Text fontSize="xs" opacity={0.7}>
+                {subName}
+              </Text>
+            ) : null}
+          </Box>
+        </Flex>
+
+        {/* BÊN PHẢI: trạng thái + đang làm gì */}
+        <Flex
+          alignItems="center"
+          justifyContent={{ base: 'center', sm: 'flex-end' }}
+          flex="1"
+          columnGap={3}
+          flexWrap="wrap"
+        >
+          <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap">
+            <DiscordDot color={status.color} pulse={online} />
+            {status.label}
+          </Text>
+          {activity ? (
+            <Flex alignItems="center" columnGap={2}>
+              {activity.art ? (
+                <Box
+                  as="img"
+                  src={activity.art}
+                  alt="Album art"
+                  w="40px"
+                  h="40px"
+                  borderRadius="md"
+                  objectFit="cover"
+                  flexShrink={0}
+                />
+              ) : null}
+              <Box textAlign="left" lineHeight="1.15">
+                <Text fontSize={{ base: 'xs', sm: 'sm' }} fontWeight="medium">
+                  {activity.icon} {activity.text}
+                </Text>
+                {activity.sub ? (
+                  <Text fontSize="xs" color={muted}>
+                    {activity.sub}
+                  </Text>
+                ) : null}
+              </Box>
+            </Flex>
+          ) : (
+            <Text fontSize="xs" color={muted}>
+              {online ? 'Sẵn sàng trò chuyện' : 'Đã nghỉ ngơi'}
+            </Text>
+          )}
+        </Flex>
+      </Flex>
+    </Box>
+  )
+}
+
+export default StatusBar

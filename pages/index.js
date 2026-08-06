@@ -5,13 +5,13 @@ import {
   Box,
   Button,
   List,
-  ListItem,
-  useColorModeValue
+  ListItem
 } from '@chakra-ui/react'
 import Paragraph from '../components/ui/paragraph'
 import { BioSection, BioYear } from '../components/ui/bio'
 import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
+import StatusBar from '../components/ui/status-bar'
 import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
 import Image from 'next/image'
@@ -19,16 +19,7 @@ import Image from 'next/image'
 const Home = () => (
   <Layout>
     <Container>
-      <Box
-        borderRadius="lg"
-        mb={6}
-        p={3}
-        textAlign="center"
-        bg={useColorModeValue('whiteAlpha.500', 'whiteAlpha.200')}
-        css={{ backdropFilter: 'blur(10px)' }}
-      >
-        Xin chào! Mình là một người bình thường với đam mê công nghệ.
-      </Box>
+      <StatusBar />
 
       <Box display={{ md: 'flex' }}>
         <Box flexGrow={1}>
