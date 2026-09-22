@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Box, Text, useBreakpointValue, useColorModeValue } from '@chakra-ui/react'
+import {
+  Box,
+  Text,
+  useBreakpointValue,
+  useColorModeValue
+} from '@chakra-ui/react'
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
 
 // Lời chào theo khung giờ trong ngày, mỗi khung có 3 ngôn ngữ (3 câu mỗi ngôn ngữ)
@@ -27,7 +32,15 @@ const GREETINGS = {
 }
 
 const slotOf = h =>
-  h < 5 ? 'night' : h < 11 ? 'morning' : h < 17 ? 'afternoon' : h < 22 ? 'evening' : 'night'
+  h < 5
+    ? 'night'
+    : h < 11
+      ? 'morning'
+      : h < 17
+        ? 'afternoon'
+        : h < 22
+          ? 'evening'
+          : 'night'
 
 // Vòng lặp trong khung giờ: vi[0..2] → en[0..2] → ja[0..2] → quay lại vi[0]
 const pool = slot => [
@@ -40,22 +53,44 @@ const pool = slot => [
  * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải — hover
  * thấy tooltip "Say hi" trên đầu, click → bounce + speech bubble chào theo
  * khung giờ trong ngày, bấm liên tục chạy hết câu Việt → Anh → Nhật → lại Việt.
+ * Rin có idle-float nhẹ ("thở") và entrance mượt khi load; mọi chuyển động
+ * tôn trọng prefers-reduced-motion.
  *
  * Ngoài ra lắng nghe sự kiện hover từ phần Projects (CustomEvent rìn:peek / rin:clear):
  * hover vào card project → bubble hiện tên project đó (「tên」), rời chuột → ẩn ngay.
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)
+  // Render-reactive (không phải ref): idle-float/entrance/sparkle quyết định theo
+  // prefers-reduced-motion ngay ở render, không bị chờ mount.
+  const [reduced] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
   const controls = useAnimationControls()
   const idx = useRef(0)
   const slotRef = useRef(null)
   const bubbleTimer = useRef(null)
-  const reduced = useRef(false)
+  // Entrance chạy sau mount 1 frame: server và client hydrate cùng render
+  // opacity 0 (khớp style) → setMounted(true) mới animate — tránh React
+  // hydration mismatch warning khi framer lỡ animate giữa SSR và hydrate.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const imgH = useBreakpointValue({ base: 72, sm: 96, md: 128 })
   const inset = useBreakpointValue({ base: '8px', sm: '16px', md: '16px' })
-  const bubbleBg = useColorModeValue('rgba(255, 255, 255, 0.92)', 'rgba(23, 25, 42, 0.92)')
-  const bubbleBorder = useColorModeValue('rgba(0, 0, 0, 0.18)', 'rgba(255, 255, 255, 0.24)')
+  const bubbleBg = useColorModeValue(
+    'rgba(255, 255, 255, 0.92)',
+    'rgba(23, 25, 42, 0.92)'
+  )
+  const bubbleBorder = useColorModeValue(
+    'rgba(0, 0, 0, 0.55)',
+    'rgba(255, 255, 255, 0.55)'
+  )
   const bubbleText = useColorModeValue('gray.800', 'whiteAlpha.900')
   const bubbleSheen = useColorModeValue(
     'linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0) 55%)',
@@ -70,11 +105,12 @@ const CornerRin = () => {
   }
 
   const greet = () => {
-    // bounce — cùng keyframes nade-bounce của nadeshiko
-    if (!reduced.current) {
+    // bounce — cùng keyframes nade-bounce của nadeshiko, thêm xoay nhẹ cho "bồng bềnh"
+    if (!reduced) {
       controls.start({
         y: [0, -14, 0, -5, 0],
         scale: [1, 1.06, 0.97, 1.02, 1],
+        rotate: [0, -3, 2, 0],
         transition: { duration: 0.55, ease: 'easeInOut' }
       })
     }
@@ -91,8 +127,6 @@ const CornerRin = () => {
   }
 
   useEffect(() => {
-    reduced.current =
-      (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || false
     // tự chào 1 lần: ngẫu nhiên một câu VI trong khung giờ hiện tại (như nadeshiko)
     const t = setTimeout(() => {
       const slot = slotOf(new Date().getHours())
@@ -184,9 +218,28 @@ const CornerRin = () => {
       }}
     >
       <motion.div
-        whileHover={{ y: -6 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        initial={
+          reduced || mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }
+        }
+        animate={
+          reduced
+            ? { opacity: 1, y: 0 }
+            : mounted
+              ? {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.5, ease: 'easeOut' }
+                }
+              : { opacity: 0, y: 24 }
+        }
+        whileHover={{
+          y: -6,
+          transition: { type: 'spring', stiffness: 220, damping: 16 }
+        }}
+        whileTap={{
+          scale: 0.98,
+          transition: { type: 'spring', stiffness: 220, damping: 16 }
+        }}
       >
         <motion.button
           animate={controls}
@@ -209,21 +262,39 @@ const CornerRin = () => {
             filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))'
           }}
         >
-          <img
-            src="/images/rin.png"
-            alt="Rin — Yuru Camp△"
-            draggable={false}
-            decoding="async"
-            style={{ display: 'block', height: imgH, width: 'auto' }}
-          />
+          {/* idle-float: Rin "thở" nhẹ liên tục; lớp riêng quanh img nên không
+              xung đột với bounce (controls trên button) hay hover/tap */}
+          <motion.div
+            animate={reduced ? { y: 0 } : { y: [0, -3, 0] }}
+            transition={
+              reduced
+                ? undefined
+                : { duration: 3.4, repeat: Infinity, ease: 'easeInOut' }
+            }
+            style={{ willChange: 'transform' }}
+          >
+            <img
+              src="/images/rin.png"
+              alt="Rin — Yuru Camp△"
+              draggable={false}
+              decoding="async"
+              style={{ display: 'block', height: imgH, width: 'auto' }}
+            />
+          </motion.div>
           <AnimatePresence>
             {bubble && (
               <motion.div
                 key="rin-bubble"
-                initial={{ opacity: 0, scale: 0.5, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.5, y: 12 }}
-                transition={{ type: 'spring', stiffness: 340, damping: 26 }}
+                initial={{ opacity: 0, scale: 0.6, y: 14, rotate: -5 }}
+                animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.94,
+                  y: 6,
+                  rotate: 0,
+                  transition: { duration: 0.16, ease: 'easeOut' }
+                }}
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 style={{
                   position: 'absolute',
                   right: 'calc(100% + 14px)',
@@ -238,10 +309,10 @@ const CornerRin = () => {
                   maxWidth={240}
                   borderRadius="18px 18px 18px 6px"
                   bg={bubbleBg}
-                  border="1px solid"
+                  border="2px solid"
                   borderColor={bubbleBorder}
                   backdropFilter="blur(10px)"
-                  boxShadow="0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07)"
+                  boxShadow={`0 0 0 3px ${bubbleBg}, 0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08)`}
                   px={4}
                   py={2.5}
                   whiteSpace="nowrap"
@@ -280,8 +351,49 @@ const CornerRin = () => {
                     background={bubbleSheen}
                     pointerEvents="none"
                   />
-                  <Text fontSize="13.5px" lineHeight="1.35" fontWeight="semibold" color={bubbleText} userSelect="none">
-                    {bubble}
+                  {/* kirakira ✦ — chấm sao anime góc bubble, pop theo bubble (decor, không chặn click) */}
+                  {!reduced && (
+                    <motion.span
+                      aria-hidden
+                      style={{
+                        position: 'absolute',
+                        top: -11,
+                        right: -7,
+                        fontSize: 15,
+                        lineHeight: 1,
+                        color: '#f0bc4e',
+                        pointerEvents: 'none',
+                        zIndex: 32
+                      }}
+                      initial={{ scale: 0, rotate: -40, opacity: 0 }}
+                      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 16,
+                        delay: 0.06
+                      }}
+                    >
+                      ✦
+                    </motion.span>
+                  )}
+                  <Text
+                    fontSize="13.5px"
+                    lineHeight="1.35"
+                    fontWeight="semibold"
+                    color={bubbleText}
+                    userSelect="none"
+                  >
+                    {/* key=bubble → mỗi lần đổi nội dung remount <span>, chạy micro-fade 0.18s mượt */}
+                    <motion.span
+                      key={bubble}
+                      initial={{ opacity: 0, y: 3 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      style={{ display: 'inline-block' }}
+                    >
+                      {bubble}
+                    </motion.span>
                   </Text>
                 </Box>
               </motion.div>
