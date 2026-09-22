@@ -19,6 +19,7 @@ import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
 import Image from 'next/image'
 import { fetchGitHubData } from '../lib/github-data'
+import { rinPeek, rinClear } from '../lib/rin-peek'
 
 // BUILD TIME: kéo danh sách project từ GitHub để dựng khung SSR ban đầu.
 // Phần live phía client tự quét lại phần pin khi load trang (xem lib/live-pinned.js).
@@ -27,6 +28,26 @@ export async function getStaticProps() {
   const github = await fetchGitHubData()
   return { props: { github } }
 }
+
+// Link "On the web": hover/touch → Rin hiện bubble 「@handle」 (tương tự card project).
+// Markup Button giữ y nguyên — chỉ thêm handler peek/clear cho desktop + mobile.
+const WebLink = ({ href, icon: Icon, label }) => (
+  <ListItem>
+    <Link
+      href={href}
+      target="_blank"
+      onMouseEnter={() => rinPeek(label)}
+      onMouseLeave={rinClear}
+      onTouchStart={() => rinPeek(label)}
+      onTouchMove={rinClear}
+      onTouchCancel={rinClear}
+    >
+      <Button variant="ghost" colorScheme="teal" leftIcon={<Icon />}>
+        {label}
+      </Button>
+    </Link>
+  </ListItem>
+)
 
 const Home = ({ github }) => (
   <Layout>
@@ -38,7 +59,10 @@ const Home = ({ github }) => (
           <Heading as="h2" variant="page-title">
             Slimu Neet
           </Heading>
-          <p>Just a plain human with hobbies and a passion for linux &amp; open source.</p>
+          <p>
+            Just a plain human with hobbies and a passion for linux &amp; open
+            source.
+          </p>
         </Box>
         <Box
           flexShrink={0}
@@ -71,9 +95,7 @@ const Home = ({ github }) => (
         <Heading as="h3" variant="section-title">
           I ♥
         </Heading>
-        <Paragraph>
-          Just go ahead and marry your bed△
-        </Paragraph>
+        <Paragraph>Just go ahead and marry your bed△</Paragraph>
       </Section>
 
       <Section delay={0.2}>
@@ -88,50 +110,26 @@ const Home = ({ github }) => (
           On the web
         </Heading>
         <List>
-          <ListItem>
-            <Link href="https://github.com/slimulv1/" target="_blank">
-              <Button
-                variant="ghost"
-                colorScheme="teal"
-                leftIcon={<IoLogoGithub />}
-              >
-                @slimulv1
-              </Button>
-            </Link>
-          </ListItem>
-          <ListItem>
-            <Link href="https://x.com/slimu3620" target="_blank">
-              <Button
-                variant="ghost"
-                colorScheme="teal"
-                leftIcon={<IoLogoTwitter />}
-              >
-                @slimu3620
-              </Button>
-            </Link>
-          </ListItem>
-          <ListItem>
-            <Link href="https://www.instagram.com/29.thg11_/" target="_blank">
-              <Button
-                variant="ghost"
-                colorScheme="teal"
-                leftIcon={<IoLogoInstagram />}
-              >
-                @29.thg11_
-              </Button>
-            </Link>
-          </ListItem>
-          <ListItem>
-            <Link href="https://steamcommunity.com/id/virusneet" target="_blank">
-              <Button
-                variant="ghost"
-                colorScheme="teal"
-                leftIcon={<FaSteam />}
-              >
-                @virusneet
-              </Button>
-            </Link>
-          </ListItem>
+          <WebLink
+            href="https://github.com/slimulv1/"
+            icon={IoLogoGithub}
+            label="@slimulv1"
+          />
+          <WebLink
+            href="https://x.com/slimu3620"
+            icon={IoLogoTwitter}
+            label="@slimu3620"
+          />
+          <WebLink
+            href="https://www.instagram.com/29.thg11_/"
+            icon={IoLogoInstagram}
+            label="@29.thg11_"
+          />
+          <WebLink
+            href="https://steamcommunity.com/id/virusneet"
+            icon={FaSteam}
+            label="@virusneet"
+          />
         </List>
       </Section>
 

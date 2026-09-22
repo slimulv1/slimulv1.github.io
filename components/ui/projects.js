@@ -13,6 +13,8 @@ import { IoStar, IoArrowForward } from 'react-icons/io5'
 import pinnedRepos from '../../lib/pinned-repos.json'
 // Live: tự quét phần pin trên profile github không cần token/rebuild (xem lib/live-pinned.js)
 import { fetchLivePinned } from '../../lib/live-pinned'
+// Bubble "Rin xem chung" dùng chung (Projects / Discord / On the web — xem lib/rin-peek.js)
+import { rinPeek, rinClear } from '../../lib/rin-peek'
 
 const mono =
   "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
@@ -50,11 +52,6 @@ const itemVariants = {
 
 // Hover card → nhờ Rin "xem chung": bubble của Rin hiện tên project (CustomEvent,
 // CornerRin ở góc trang lắng nghe; chỉ thêm handler, không đổi markup/animation card).
-const peekRepo = name =>
-  window.dispatchEvent(
-    new CustomEvent('rin:peek', { detail: String(name || '') })
-  )
-const peekClear = () => window.dispatchEvent(new CustomEvent('rin:clear'))
 
 const ProjectCard = ({ repo, index = 0 }) => {
   const bg = useColorModeValue('whiteAlpha.800', 'whiteAlpha.50')
@@ -90,14 +87,14 @@ const ProjectCard = ({ repo, index = 0 }) => {
         display="block"
         h="100%"
         _hover={{ textDecoration: 'none' }}
-        onMouseEnter={() => peekRepo(repo.name)}
-        onMouseLeave={peekClear}
+        onMouseEnter={() => rinPeek(repo.name)}
+        onMouseLeave={rinClear}
         // Mobile: touch không sinh mouseenter → bubble peek qua touchstart
         // (tap) để tính năng cũng chạy trên điện thoại; touchmove/touchcancel
         // xoá nếu user chỉ vuốt cuộn (tránh bubble giả khi lướt trang).
-        onTouchStart={() => peekRepo(repo.name)}
-        onTouchMove={peekClear}
-        onTouchCancel={peekClear}
+        onTouchStart={() => rinPeek(repo.name)}
+        onTouchMove={rinClear}
+        onTouchCancel={rinClear}
       >
         <Flex
           role="group"

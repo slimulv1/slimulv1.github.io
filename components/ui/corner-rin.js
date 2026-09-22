@@ -56,8 +56,9 @@ const pool = slot => [
  * Rin có idle-float nhẹ ("thở") và entrance mượt khi load; mọi chuyển động
  * tôn trọng prefers-reduced-motion.
  *
- * Ngoài ra lắng nghe sự kiện hover từ phần Projects (CustomEvent rìn:peek / rin:clear):
- * hover vào card project → bubble hiện tên project đó (「tên」), rời chuột → ẩn ngay.
+ * Ngoài ra lắng nghe sự kiện hover (CustomEvent rin:peek / rin:clear) từ Projects,
+ * vùng Discord và các link "On the web": hover/chạm → bubble hiện nội dung đó (「...」),
+ * rời chuột / vuốt → ẩn ngay.
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)

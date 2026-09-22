@@ -5,6 +5,8 @@ import {
   DISCORD_USER_ID
 } from '../../lib/use-discord-presence'
 import { DiscordBadges } from './discord-badges'
+// Bubble "Rin xem chung" dùng chung (xem lib/rin-peek.js)
+import { rinPeek, rinClear } from '../../lib/rin-peek'
 
 const STATUS = {
   online: { label: 'Trực tuyến', color: '#73daca' },
@@ -105,7 +107,8 @@ const StatusBar = () => {
     ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
     : null
   const guild = user.primary_guild
-  const name = user.display_name || user.global_name || user.username || 'Discord'
+  const name =
+    user.display_name || user.global_name || user.username || 'Discord'
   const subName = user.username ? `@${user.username}` : ''
 
   return (
@@ -115,6 +118,12 @@ const StatusBar = () => {
       p={3}
       bg={bg}
       css={{ backdropFilter: 'blur(10px)' }}
+      // Hover/touch → Rin hiện bubble 「@username」 (giống card project).
+      onMouseEnter={() => rinPeek(subName || name)}
+      onMouseLeave={rinClear}
+      onTouchStart={() => rinPeek(subName || name)}
+      onTouchMove={rinClear}
+      onTouchCancel={rinClear}
     >
       <Flex
         alignItems="center"
@@ -151,7 +160,12 @@ const StatusBar = () => {
             />
           )}
           <Box lineHeight="1.15">
-            <Flex alignItems="center" columnGap={2} flexWrap="wrap" justifyContent={{ base: 'center', sm: 'flex-start' }}>
+            <Flex
+              alignItems="center"
+              columnGap={2}
+              flexWrap="wrap"
+              justifyContent={{ base: 'center', sm: 'flex-start' }}
+            >
               <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
                 {name}
               </Text>
@@ -177,7 +191,12 @@ const StatusBar = () => {
                     flexShrink={0}
                     css={{ display: 'inline-block' }}
                   />
-                  <Text fontSize="xs" fontWeight="semibold" opacity={0.9} whiteSpace="nowrap">
+                  <Text
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    opacity={0.9}
+                    whiteSpace="nowrap"
+                  >
                     {guild.tag}
                   </Text>
                 </Flex>
