@@ -167,17 +167,52 @@ const ProjectCard = ({ repo, index = 0 }) => {
   )
 }
 
+// Chữ ký dữ liệu để so sánh: chỉ cập nhật state khi list THỰC SỰ đổi
+// (tránh re-render + replay animation vô nghĩa mỗi lần poll)
+const repoSignature = r =>
+  [r.name, r.description, r.language && r.language.name, r.language && r.language.color, r.stars].join('|')
+const listsEqual = (a, b) =>
+  a.length === b.length && a.every((r, i) => repoSignature(r) === repoSignature(b[i]))
+
 const Projects = ({ repos = pinnedRepos }) => {
   // Dữ liệu build (getStaticProps) giữ làm khung SSR/không-JS —
-  // rồi lặng lẽ thay bằng dữ liệu pin mới nhất ngay khi load trang.
+  // rồi lặng lẽ thay bằng dữ liệu pin mới nhất (lần load + định kỳ).
   const [list, setList] = useState(repos)
   useEffect(() => {
     let alive = true
-    fetchLivePinned().then(live => {
-      if (alive && live && live.length) setList(live)
-    })
+    let inFlight = false
+
+    const refresh = () => {
+      if (inFlight || !alive) return
+      inFlight = true
+      fetchLivePinned()
+        .then(live => {
+          if (!alive || !live) return
+          setList(prev => (listsEqual(prev, live) ? prev : live))
+        })
+        .catch(err => {
+          console.warn('[projects] live refresh error:', err && err.message)
+        })
+        .finally(() => {
+          inFlight = false
+        })
+    }
+
+    refresh()
+    // Tự quét lại định kỳ khi tab còn mở + ngay khi quay lại tab —
+    // pin/unpin repo sẽ xuất hiện mà không cần reload trang.
+    const interval = setInterval(refresh, 5 * 60 * 1000)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', refresh)
+
     return () => {
       alive = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', refresh)
     }
   }, [])
 
