@@ -20,7 +20,7 @@ import { useInterfaceLang } from '../../lib/interface-lang'
 import { UI, timeAgo } from '../../lib/interface-labels'
 
 const mono =
-  "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+  "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'M PLUS Rounded 1c', monospace"
 
 // "push X trước" — thời gian tương đối theo ngôn ngữ giao diện
 // (dùng chung timeAgo từ lib/interface-labels.js, khớp vòng xoay 15s)

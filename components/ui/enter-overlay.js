@@ -5,7 +5,7 @@ import { useInterfaceLang } from '../../lib/interface-lang'
 import { UI } from '../../lib/interface-labels'
 
 const mono =
-  "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
+  "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'M PLUS Rounded 1c', monospace"
 
 /**
  * Màn hình "click to enter": trang web hiện blur mờ phía sau, bấm ở
