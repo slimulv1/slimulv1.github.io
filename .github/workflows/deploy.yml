@@ -26,11 +26,9 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
-      # GITHUB_DATA_TOKEN là secret tùy chọn: nếu set (fine-grained PAT đọc public repos + user),
-      # build sẽ lấy đúng các repo đang pin trên profile (nếu không, tự fallback REST non-fork).
+      # Không cần token: dữ liệu SSR ban đầu dùng REST công khai, live phía client
+      # tự quét phần pin trên profile (xem lib/live-pinned.js + functions/api/pinned.js).
       - run: bun run build
-        env:
-          GITHUB_DATA_TOKEN: ${{ secrets.GH_DATA_TOKEN }}
       - uses: actions/configure-pages@v5
         with:
           enablement: true

@@ -20,8 +20,9 @@ import { FaSteam } from 'react-icons/fa6'
 import Image from 'next/image'
 import { fetchGitHubData } from '../lib/github-data'
 
-// Chạy ở BUILD TIME: kéo tên/bio + danh sách project từ GitHub,
-// đổ thẳng vào HTML tĩnh. Chi tiết fallback xem lib/github-data.js.
+// BUILD TIME: kéo danh sách project từ GitHub để dựng khung SSR ban đầu.
+// Phần live phía client tự quét lại phần pin khi load trang (xem lib/live-pinned.js).
+// Tên + tagline giữ tĩnh theo thiết kế — không sync theo GitHub.
 export async function getStaticProps() {
   const github = await fetchGitHubData()
   return { props: { github } }
@@ -35,9 +36,9 @@ const Home = ({ github }) => (
       <Box display={{ md: 'flex' }}>
         <Box flexGrow={1}>
           <Heading as="h2" variant="page-title">
-            {github.profile.name}
+            Slimu Neet
           </Heading>
-          <p>{github.profile.bio}</p>
+          <p>Just a plain human with hobbies and a passion for linux &amp; open source.</p>
         </Box>
         <Box
           flexShrink={0}
