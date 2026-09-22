@@ -2,41 +2,51 @@ import { useEffect, useRef, useState } from 'react'
 import { Box, Text, useBreakpointValue, useColorModeValue } from '@chakra-ui/react'
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
 
-// Chuỗi chào tuần tự: chạy hết câu tiếng Việt → tiếng Anh → tiếng Nhật → quay lại Việt
-const SEQUENCE = [
-  // ——— tiếng Việt ———
-  'Buổi sáng tốt lành', 'Trà sáng nhé?', 'Đi cắm trại thôi',
-  'Chào buổi chiều', 'Thời tiết đẹp ghê', 'Nghỉ ngơi chút nào',
-  'Buổi tối vui vẻ', 'Đốt lửa trại nha', 'Nghe nhạc nền đi ~',
-  'Ngủ ngon nhé', 'Còn thức à?', 'Mai gặp lại nhé',
-  // ——— tiếng Anh ———
-  'Good morning!', 'A cup of tea?', "Let's go camping!",
-  'Good afternoon!', 'The weather is so nice.', 'Take a little break.',
-  'Good evening!', 'Campfire time.', 'Enjoy the background music ~',
-  'Good night...', 'Still awake?', 'See you tomorrow!',
-  // ——— tiếng Nhật ———
-  'おはよう', 'お茶にする？', 'キャンプ行こう！',
-  'こんにちは', '天気がいいね', 'ちょっと休もう',
-  'こんばんは', '焚き火の時間だよ', '音楽を聴こう〜',
-  'おやすみ...', 'まだ起きてるの？', 'また明日ね'
-]
-
-// Vị trí bắt đầu mỗi khung giờ (câu VI đầu tiên của slot) cho lần chào tự động
-const SLOT_START = { morning: 0, afternoon: 3, evening: 6, night: 9 }
+// Lời chào theo khung giờ trong ngày, mỗi khung có 3 ngôn ngữ (3 câu mỗi ngôn ngữ)
+const GREETINGS = {
+  morning: {
+    vi: ['Buổi sáng tốt lành', 'Trà sáng nhé?', 'Đi cắm trại thôi'],
+    en: ['Good morning!', 'A cup of tea?', "Let's go camping!"],
+    ja: ['おはよう', 'お茶にする？', 'キャンプ行こう！']
+  },
+  afternoon: {
+    vi: ['Chào buổi chiều', 'Thời tiết đẹp ghê', 'Nghỉ ngơi chút nào'],
+    en: ['Good afternoon!', 'The weather is so nice.', 'Take a little break.'],
+    ja: ['こんにちは', '天気がいいね', 'ちょっと休もう']
+  },
+  evening: {
+    vi: ['Buổi tối vui vẻ', 'Đốt lửa trại nha', 'Nghe nhạc nền đi ~'],
+    en: ['Good evening!', 'Campfire time.', 'Enjoy the background music ~'],
+    ja: ['こんばんは', '焚き火の時間だよ', '音楽を聴こう〜']
+  },
+  night: {
+    vi: ['Ngủ ngon nhé', 'Còn thức à?', 'Mai gặp lại nhé'],
+    en: ['Good night...', 'Still awake?', 'See you tomorrow!'],
+    ja: ['おやすみ...', 'まだ起きてるの？', 'また明日ね']
+  }
+}
 
 const slotOf = h =>
   h < 5 ? 'night' : h < 11 ? 'morning' : h < 17 ? 'afternoon' : h < 22 ? 'evening' : 'night'
+
+// Vòng lặp trong khung giờ: vi[0..2] → en[0..2] → ja[0..2] → quay lại vi[0]
+const pool = slot => [
+  ...GREETINGS[slot].vi,
+  ...GREETINGS[slot].en,
+  ...GREETINGS[slot].ja
+]
 
 /**
  * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải (theo vị trí rin.png
  * bên KabosuNeko), mang đúng hiệu ứng/chức năng của nadeshiko.png — hover
  * thấy tooltip "Say hi" trên đầu, click → bounce + speech bubble chào theo
- * chuỗi tuần tự: hết câu tiếng Việt → tiếng Anh → tiếng Nhật → quay lại Việt.
+ * khung giờ trong ngày, bấm liên tục chạy hết câu Việt → Anh → Nhật → lại Việt.
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)
   const controls = useAnimationControls()
-  const idx = useRef(-1)
+  const idx = useRef(0)
+  const slotRef = useRef(null)
   const bubbleTimer = useRef(null)
   const reduced = useRef(false)
 
@@ -61,17 +71,27 @@ const CornerRin = () => {
         transition: { duration: 0.55, ease: 'easeInOut' }
       })
     }
-    idx.current = (idx.current + 1) % SEQUENCE.length
-    showBubble(SEQUENCE[idx.current])
+    const slot = slotOf(new Date().getHours())
+    const p = pool(slot)
+    // sang khung giờ mới → bắt đầu lại từ câu Việt đầu tiên của khung này
+    if (slotRef.current !== slot) {
+      slotRef.current = slot
+      idx.current = 0
+    } else {
+      idx.current = (idx.current + 1) % p.length
+    }
+    showBubble(p[idx.current])
   }
 
   useEffect(() => {
     reduced.current =
       (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || false
-    // tự chào 1 lần theo khung giờ, như nadeshiko (bắt đầu từ câu VI đầu slot)
+    // tự chào 1 lần: ngẫu nhiên một câu VI trong khung giờ hiện tại (như nadeshiko)
     const t = setTimeout(() => {
-      idx.current = SLOT_START[slotOf(new Date().getHours())]
-      showBubble(SEQUENCE[idx.current])
+      const slot = slotOf(new Date().getHours())
+      slotRef.current = slot
+      idx.current = Math.floor(Math.random() * GREETINGS[slot].vi.length)
+      showBubble(pool(slot)[idx.current])
     }, 500)
     return () => {
       clearTimeout(t)
