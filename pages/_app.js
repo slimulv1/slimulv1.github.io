@@ -1,7 +1,7 @@
 import Layout from '../components/layouts/main'
 import { AnimatePresence } from 'framer-motion'
 import Chakra from '../components/providers/chakra'
-// Giao diện tự xoay vòng ngôn ngữ Việt → Anh → Nhật mỗi 15 giây (xem lib/interface-lang.js)
+// Giao diện tự xoay vòng ngôn ngữ Anh → Nhật → Việt mỗi 10 giây (xem lib/interface-lang.js)
 import { InterfaceLangProvider } from '../lib/interface-lang'
 
 if (typeof window !== 'undefined') {
