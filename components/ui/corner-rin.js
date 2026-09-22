@@ -84,16 +84,22 @@ const CornerRin = () => {
   const imgH = useBreakpointValue({ base: 72, sm: 96, md: 128 })
   const inset = useBreakpointValue({ base: '8px', sm: '16px', md: '16px' })
   const bubbleBg = useColorModeValue(
-    'rgba(255, 255, 255, 0.92)',
+    'rgba(255, 252, 247, 0.88)', // light: sữa ấm trong suốt → blur(10px) hiện rõ, hòa nền cream #f0e7db
     'rgba(23, 25, 42, 0.92)'
   )
   const bubbleBorder = useColorModeValue(
-    'rgba(0, 0, 0, 0.55)',
+    'rgba(0, 0, 0, 0.5)',
     'rgba(255, 255, 255, 0.55)'
   )
-  const bubbleText = useColorModeValue('gray.800', 'whiteAlpha.900')
+  // Light: double-outline manga — [viền ink 2px] + [gap trắng 3px] + [viền ngoài ink 6px] + bóng mềm.
+  // Dark: giữ nguyên ring màu thân + bóng cũ.
+  const bubbleShadow = useColorModeValue(
+    '0 0 0 3px rgba(255,255,255,0.95), 0 0 0 6px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.7)',
+    '0 0 0 3px rgba(23,25,42,0.92), 0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08)'
+  )
+  const bubbleText = useColorModeValue('#3d342a', 'whiteAlpha.900')
   const bubbleSheen = useColorModeValue(
-    'linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0) 55%)',
+    'linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0) 60%)',
     'linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 55%)'
   )
 
@@ -312,7 +318,7 @@ const CornerRin = () => {
                   border="2px solid"
                   borderColor={bubbleBorder}
                   backdropFilter="blur(10px)"
-                  boxShadow={`0 0 0 3px ${bubbleBg}, 0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08)`}
+                  boxShadow={bubbleShadow}
                   px={4}
                   py={2.5}
                   whiteSpace="nowrap"
