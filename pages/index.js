@@ -28,7 +28,7 @@ const Home = () => (
           <Heading as="h2" variant="page-title">
             Slimu Neet
           </Heading>
-          <p>Chỉ là 1 người bình thường với sở thích và đam mê công nghệ</p>
+          <p>Just a regular person with hobbies and a passion for technology.</p>
         </Box>
         <Box
           flexShrink={0}
