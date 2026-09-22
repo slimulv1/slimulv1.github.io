@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Box, Flex, Text, SimpleGrid, useColorModeValue, Link } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Text,
+  SimpleGrid,
+  useColorModeValue,
+  Link
+} from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import { IoStar, IoArrowForward } from 'react-icons/io5'
 // Snapshot thủ công — chỉ dùng làm fallback khi GitHub không có dữ liệu (xem lib/github-data.js)
@@ -44,7 +51,9 @@ const itemVariants = {
 // Hover card → nhờ Rin "xem chung": bubble của Rin hiện tên project (CustomEvent,
 // CornerRin ở góc trang lắng nghe; chỉ thêm handler, không đổi markup/animation card).
 const peekRepo = name =>
-  window.dispatchEvent(new CustomEvent('rin:peek', { detail: String(name || '') }))
+  window.dispatchEvent(
+    new CustomEvent('rin:peek', { detail: String(name || '') })
+  )
 const peekClear = () => window.dispatchEvent(new CustomEvent('rin:clear'))
 
 const ProjectCard = ({ repo, index = 0 }) => {
@@ -83,6 +92,12 @@ const ProjectCard = ({ repo, index = 0 }) => {
         _hover={{ textDecoration: 'none' }}
         onMouseEnter={() => peekRepo(repo.name)}
         onMouseLeave={peekClear}
+        // Mobile: touch không sinh mouseenter → bubble peek qua touchstart
+        // (tap) để tính năng cũng chạy trên điện thoại; touchmove/touchcancel
+        // xoá nếu user chỉ vuốt cuộn (tránh bubble giả khi lướt trang).
+        onTouchStart={() => peekRepo(repo.name)}
+        onTouchMove={peekClear}
+        onTouchCancel={peekClear}
       >
         <Flex
           role="group"
@@ -100,9 +115,13 @@ const ProjectCard = ({ repo, index = 0 }) => {
           _hover={{
             borderColor: hoverBorder,
             transform: 'translateY(-2px)',
-            boxShadow: '0 0 0 1px rgba(115, 218, 202, 0.35), 0 8px 24px -12px rgba(115, 218, 202, 0.25)'
+            boxShadow:
+              '0 0 0 1px rgba(115, 218, 202, 0.35), 0 8px 24px -12px rgba(115, 218, 202, 0.25)'
           }}
-          _focusWithin={{ borderColor: hoverBorder, boxShadow: '0 0 0 1px rgba(115, 218, 202, 0.35)' }}
+          _focusWithin={{
+            borderColor: hoverBorder,
+            boxShadow: '0 0 0 1px rgba(115, 218, 202, 0.35)'
+          }}
         >
           {/* Header: đường dẫn kiểu prompt + star + mũi tên */}
           <Flex justify="space-between" align="center" gap={2}>
@@ -178,9 +197,16 @@ const ProjectCard = ({ repo, index = 0 }) => {
 // Chữ ký dữ liệu để so sánh: chỉ cập nhật state khi list THỰC SỰ đổi
 // (tránh re-render + replay animation vô nghĩa mỗi lần poll)
 const repoSignature = r =>
-  [r.name, r.description, r.language && r.language.name, r.language && r.language.color, r.stars].join('|')
+  [
+    r.name,
+    r.description,
+    r.language && r.language.name,
+    r.language && r.language.color,
+    r.stars
+  ].join('|')
 const listsEqual = (a, b) =>
-  a.length === b.length && a.every((r, i) => repoSignature(r) === repoSignature(b[i]))
+  a.length === b.length &&
+  a.every((r, i) => repoSignature(r) === repoSignature(b[i]))
 
 const Projects = ({ repos = pinnedRepos }) => {
   // Dữ liệu build (getStaticProps) giữ làm khung SSR/không-JS —
