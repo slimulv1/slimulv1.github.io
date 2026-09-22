@@ -1,153 +1,62 @@
-import { useEffect, useRef, useState } from 'react'
-import { Box, useColorModeValue } from '@chakra-ui/react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { IoMusicalNotes } from 'react-icons/io5'
+import { useEffect, useRef } from 'react'
 
 const TRACK_SRC = '/music/loch-to-tabibito.flac'
 const TRACK_FALLBACK_SRC = '/music/loch-to-tabibito.m4a'
-const TRACK_NAME = 'Loch to Tabibito'
 
-// Equalizer 3 vạch nhảy khi đang phát
-const Equalizer = () => (
-  <Box display="flex" alignItems="flex-end" gap="2.5px" h="18px">
-    {[0, 1, 2].map(i => (
-      <motion.span
-        key={i}
-        animate={{ height: ['6px', '16px', '9px', '6px'] }}
-        transition={{
-          repeat: Infinity,
-          duration: 1.1,
-          delay: i * 0.18,
-          ease: 'easeInOut'
-        }}
-        style={{
-          width: 3,
-          borderRadius: 2,
-          background: '#73daca',
-          boxShadow: '0 0 6px rgba(115, 218, 202, 0.8)'
-        }}
-      />
-    ))}
-  </Box>
-)
-
+/**
+ * Nhạc nền tự chạy, không có bất kỳ điều khiển hiển thị nào.
+ *
+ * Lưu ý về chính sách autoplay của trình duyệt: hầu hết trình duyệt
+ * (Chrome/Firefox/Safari) chặn phát âm thanh tự động khi vào trang —
+ * người dùng phải tương tác ít nhất 1 lần (click/tap/phím bất kỳ đâu).
+ * Vì vậy:
+ *  1. Thử play ngay khi load — nếu trình duyệt cho phép (whitelist,
+ *     engagement cao) thì nhạc chạy từ giây đầu.
+ *  2. Nếu bị chặn: mở khóa bằng *tương tác đầu tiên bất kỳ đâu trên
+ *     trang* (pointerdown/keydown/touchstart) — không hiện nút gì cả.
+ */
 const BgMusic = () => {
   const audioRef = useRef(null)
-  const [playing, setPlaying] = useState(false)
-  const [error, setError] = useState(false)
-
-  const bg = useColorModeValue('rgba(255,255,255,0.85)', 'rgba(255,255,255,0.10)')
-  const border = useColorModeValue('rgba(0,0,0,0.18)', 'rgba(255,255,255,0.22)')
-  const iconColor = useColorModeValue('#2d3748', '#a9b1d6')
-  const idleShadow = useColorModeValue(
-    '0 4px 14px rgba(0,0,0,0.15)',
-    '0 4px 14px rgba(0,0,0,0.4)'
-  )
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
+
     audio.volume = 0.45
-    const onPlay = () => setPlaying(true)
-    const onPause = () => setPlaying(false)
-    const onError = () => setError(true)
-    audio.addEventListener('play', onPlay)
-    audio.addEventListener('pause', onPause)
-    audio.addEventListener('error', onError)
-    return () => {
-      audio.removeEventListener('play', onPlay)
-      audio.removeEventListener('pause', onPause)
-      audio.removeEventListener('error', onError)
+
+    let unlocked = false
+
+    const tryPlay = () => {
+      if (unlocked) return
+      audio.play().then(() => {
+        unlocked = true
+        cleanup()
+      }).catch(() => {
+        // Bị chặn bởi autoplay policy — chờ tương tác người dùng
+      })
     }
+
+    const events = ['pointerdown', 'keydown', 'touchstart']
+    const cleanup = () => {
+      events.forEach(e =>
+        window.removeEventListener(e, tryPlay, { capture: true })
+      )
+    }
+    events.forEach(e => window.addEventListener(e, tryPlay, { capture: true }))
+
+    // 1. Thử autoplay trực tiếp
+    tryPlay()
+
+    return () => cleanup()
   }, [])
 
-  const toggle = async () => {
-    const audio = audioRef.current
-    if (!audio) return
-    if (playing) {
-      audio.pause()
-      return
-    }
-    try {
-      await audio.play()
-    } catch {
-      setError(true)
-    }
-  }
-
   return (
-    <>
-      {/* Nhạc nền: chỉ âm thanh, không hiển thị gì.
-          FLAC là nguồn chính (chất lượng lossless); nếu nguồn đó không
-          phục vụ được (vd. giới hạn 25MB/file của Cloudflare Pages),
-          trình duyệt tự fallback sang bản AAC. */}
-      <audio ref={audioRef} loop preload="metadata">
-        <source src={TRACK_SRC} type="audio/flac" />
-        <source src={TRACK_FALLBACK_SRC} type="audio/mp4" />
-      </audio>
-
-      <motion.button
-        onClick={toggle}
-        whileHover={{ scale: 1.07 }}
-        whileTap={{ scale: 0.93 }}
-        animate={{
-          boxShadow: playing
-            ? '0 0 18px rgba(115, 218, 202, 0.45)'
-            : idleShadow
-        }}
-        style={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          width: 48,
-          height: 48,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          border: `1px solid ${playing ? '#73daca' : border}`,
-          background: bg,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          color: playing ? '#73daca' : iconColor,
-          zIndex: 30,
-          opacity: error ? 0.55 : 1,
-          transition: 'border-color 0.2s'
-        }}
-        aria-label={
-          playing
-            ? `Tạm dừng nhạc nền (${TRACK_NAME})`
-            : `Bật nhạc nền (${TRACK_NAME})`
-        }
-        title={error ? 'Nhạc không phát được' : `${TRACK_NAME} — nhạc nền`}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {playing ? (
-            <motion.span
-              key="eq"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ duration: 0.15 }}
-            >
-              <Equalizer />
-            </motion.span>
-          ) : (
-            <motion.span
-              key="note"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ duration: 0.15 }}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <IoMusicalNotes size={20} aria-hidden="true" />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.button>
-    </>
+    <audio ref={audioRef} loop preload="metadata" aria-hidden="true">
+      {/* FLAC lossless (GH Pages); fallback AAC cho nền tảng giới hạn
+          dung lượng file (Cloudflare Pages: 25MB/file) */}
+      <source src={TRACK_SRC} type="audio/flac" />
+      <source src={TRACK_FALLBACK_SRC} type="audio/mp4" />
+    </audio>
   )
 }
 
