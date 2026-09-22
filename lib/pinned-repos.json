@@ -1,0 +1,34 @@
+[
+  {
+    "name": "Tsuki",
+    "description": "A dwm setup that doesn't suck. Or freeze.",
+    "language": { "name": "C", "color": "#555555" },
+    "stars": 1,
+    "pushedAt": "2026-09-11T09:47:47Z",
+    "url": "https://github.com/slimulv1/Tsuki"
+  },
+  {
+    "name": "arisa-repo",
+    "description": "A personal Arch Linux binary repo that just works.",
+    "language": { "name": "Shell", "color": "#89e051" },
+    "stars": 0,
+    "pushedAt": "2026-09-21T08:33:37Z",
+    "url": "https://github.com/slimulv1/arisa-repo"
+  },
+  {
+    "name": "wmaker-dotfiles",
+    "description": "Someone open the windows — it's cozy in here.",
+    "language": { "name": "Shell", "color": "#89e051" },
+    "stars": 0,
+    "pushedAt": "2026-08-30T14:51:02Z",
+    "url": "https://github.com/slimulv1/wmaker-dotfiles"
+  },
+  {
+    "name": "epos-gsx300-linux",
+    "description": "Open-source Linux replacement for EPOS Gaming Suite — EQ, sidetone, noise gate, and audio control for EPOS GSX 300 USB DAC",
+    "language": { "name": "Rust", "color": "#dea584" },
+    "stars": 0,
+    "pushedAt": "2026-09-20T09:40:32Z",
+    "url": "https://github.com/slimulv1/epos-gsx300-linux"
+  }
+]

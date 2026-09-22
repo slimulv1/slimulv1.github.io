@@ -10,6 +10,7 @@ import {
 import Paragraph from '../components/ui/paragraph'
 import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
+import Projects from '../components/ui/projects'
 import StatusBar from '../components/ui/status-bar'
 import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
@@ -61,6 +62,13 @@ const Home = () => (
         <Paragraph>
           Art, Music, đọc tiểu thuyết, Dựng các mô hình 3D, tìm hiểu về AI
         </Paragraph>
+      </Section>
+
+      <Section delay={0.2}>
+        <Heading as="h3" variant="section-title">
+          Projects
+        </Heading>
+        <Projects />
       </Section>
 
       <Section delay={0.3}>
