@@ -41,6 +41,12 @@ const itemVariants = {
   })
 }
 
+// Hover card → nhờ Rin "xem chung": bubble của Rin hiện tên project (CustomEvent,
+// CornerRin ở góc trang lắng nghe; chỉ thêm handler, không đổi markup/animation card).
+const peekRepo = name =>
+  window.dispatchEvent(new CustomEvent('rin:peek', { detail: String(name || '') }))
+const peekClear = () => window.dispatchEvent(new CustomEvent('rin:clear'))
+
 const ProjectCard = ({ repo, index = 0 }) => {
   const bg = useColorModeValue('whiteAlpha.800', 'whiteAlpha.50')
   const border = useColorModeValue('blackAlpha.300', 'whiteAlpha.200')
@@ -75,6 +81,8 @@ const ProjectCard = ({ repo, index = 0 }) => {
         display="block"
         h="100%"
         _hover={{ textDecoration: 'none' }}
+        onMouseEnter={() => peekRepo(repo.name)}
+        onMouseLeave={peekClear}
       >
         <Flex
           role="group"

@@ -40,6 +40,9 @@ const pool = slot => [
  * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải — hover
  * thấy tooltip "Say hi" trên đầu, click → bounce + speech bubble chào theo
  * khung giờ trong ngày, bấm liên tục chạy hết câu Việt → Anh → Nhật → lại Việt.
+ *
+ * Ngoài ra lắng nghe sự kiện hover từ phần Projects (CustomEvent rìn:peek / rin:clear):
+ * hover vào card project → bubble hiện tên project đó (「tên」), rời chuột → ẩn ngay.
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)
@@ -59,10 +62,11 @@ const CornerRin = () => {
     'linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 55%)'
   )
 
-  const showBubble = text => {
+  // ms mặc định 3000 — lời chào (greet/auto) giữ nguyên như cũ; riêng peek hover ngắn hơn
+  const showBubble = (text, ms = 3000) => {
     setBubble(text)
     clearTimeout(bubbleTimer.current)
-    bubbleTimer.current = setTimeout(() => setBubble(null), 3000)
+    bubbleTimer.current = setTimeout(() => setBubble(null), ms)
   }
 
   const greet = () => {
@@ -100,6 +104,26 @@ const CornerRin = () => {
       clearTimeout(t)
       clearTimeout(bubbleTimer.current)
       controls.stop()
+    }
+  }, [])
+
+  // Lắng nghe hover từ Projects: hover card → bubble hiện tên; rời → ẩn ngay.
+  // Dùng CustomEvent window (không cần prop, không đụng layout/ctx).
+  useEffect(() => {
+    const onPeek = e => {
+      const name = e && e.detail
+      if (name) showBubble(`「${name}」`, 2500)
+    }
+    const onClear = () => {
+      clearTimeout(bubbleTimer.current)
+      setBubble(null)
+    }
+    window.addEventListener('rin:peek', onPeek)
+    window.addEventListener('rin:clear', onClear)
+    return () => {
+      window.removeEventListener('rin:peek', onPeek)
+      window.removeEventListener('rin:clear', onClear)
+      clearTimeout(bubbleTimer.current)
     }
   }, [])
 
