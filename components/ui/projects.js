@@ -29,17 +29,19 @@ const timeAgo = dateStr => {
   return `${years} năm trước`
 }
 
-const listVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } }
-}
-
+// ANIMATION: mỗi card tự điều khiển (initial/whileInView riêng) chứ không thừa hưởng từ container.
+// Lý do: danh sách live có thể thêm card MỚI vào sau khi container đã chạy whileInView xong (once:true)
+// → card mount muộn kẹt ở hidden. With per-card trigger, card mới tự animate khi vào view.
 const itemVariants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } }
+  show: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.07, duration: 0.35, ease: 'easeOut' }
+  })
 }
 
-const ProjectCard = ({ repo }) => {
+const ProjectCard = ({ repo, index = 0 }) => {
   const bg = useColorModeValue('whiteAlpha.800', 'whiteAlpha.50')
   const border = useColorModeValue('blackAlpha.300', 'whiteAlpha.200')
   const nameColor = useColorModeValue('gray.800', 'whiteAlpha.900')
@@ -59,7 +61,14 @@ const ProjectCard = ({ repo }) => {
   }, [repo.pushedAt])
 
   return (
-    <motion.div variants={itemVariants} style={{ height: '100%' }}>
+    <motion.div
+      variants={itemVariants}
+      custom={index}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: '-40px' }}
+      style={{ height: '100%' }}
+    >
       <Link
         href={repo.url}
         isExternal
@@ -173,18 +182,11 @@ const Projects = ({ repos = pinnedRepos }) => {
   }, [])
 
   return (
-    <motion.div
-      variants={listVariants}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: '-40px' }}
-    >
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-        {list.map(repo => (
-          <ProjectCard key={repo.name} repo={repo} />
-        ))}
-      </SimpleGrid>
-    </motion.div>
+    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+      {list.map((repo, i) => (
+        <ProjectCard key={repo.name} repo={repo} index={i} />
+      ))}
+    </SimpleGrid>
   )
 }
 
