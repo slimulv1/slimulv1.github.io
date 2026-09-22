@@ -13,6 +13,7 @@ import Section from '../components/ui/section'
 import Projects from '../components/ui/projects'
 import BgMusic from '../components/ui/bg-music'
 import EnterOverlay from '../components/ui/enter-overlay'
+import CornerRin from '../components/ui/corner-rin'
 import StatusBar from '../components/ui/status-bar'
 import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
@@ -127,6 +128,7 @@ const Home = () => (
 
       <BgMusic />
       <EnterOverlay />
+      <CornerRin />
     </Container>
   </Layout>
 )
