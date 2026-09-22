@@ -10,7 +10,7 @@ const LogoBox = styled.span`
   align-items: center;
   height: 30px;
   line-height: 20px;
-  padding: 10px;
+  padding: 8px 10px;
 
   > svg {
     transition: 200ms ease;
@@ -19,12 +19,17 @@ const LogoBox = styled.span`
   &:hover > svg {
     transform: rotate(20deg);
   }
+
+  /* Mobile: logo gọn lại để navbar độc 1 hàng */
+  @media (max-width: 479px) {
+    font-size: 15px;
+    padding: 6px 8px;
+  }
 `
 
 const Logo = () => {
   return (
-    (<Link href="/" scroll={false}>
-
+    <Link href="/" scroll={false}>
       <LogoBox>
         <FootprintIcon />
         <Text
@@ -36,9 +41,8 @@ const Logo = () => {
           Slimu Neet
         </Text>
       </LogoBox>
-
-    </Link>)
-  );
+    </Link>
+  )
 }
 
 export default Logo

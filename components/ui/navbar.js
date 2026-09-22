@@ -17,7 +17,12 @@ const Navbar = props => {
       as="nav"
       w="100%"
       bg={useColorModeValue('#ffffff40', '#1a1b2680')}
-      css={{ backdropFilter: 'blur(10px)' }}
+      css={{
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        // iOS notch/dynamic island: đẩy nội dung nav xuống dưới "tai thỏ"
+        paddingTop: 'env(safe-area-inset-top)'
+      }}
       zIndex={2}
       {...props}
     >
@@ -26,19 +31,24 @@ const Navbar = props => {
         alignItems="center"
         justifyContent="space-between"
         maxW="container.md"
-        px={4}
-        py={2}
+        px={{ base: 2, sm: 4 }}
+        py={{ base: 1, sm: 2 }}
         flexWrap="wrap"
         columnGap={2}
         rowGap={1}
       >
-        <Flex alignItems="center">
-          <Heading as="h1" size="lg" letterSpacing="tighter">
+        <Flex alignItems="center" flexShrink={1} minWidth={0}>
+          <Heading
+            as="h1"
+            size="lg"
+            letterSpacing="tighter"
+            whiteSpace="nowrap"
+          >
             <Logo />
           </Heading>
         </Flex>
 
-        <Flex alignItems="center" columnGap={2}>
+        <Flex alignItems="center" columnGap={2} flexShrink={0}>
           <StatusDot />
           <VnClock />
           <ThemeToggleButton />

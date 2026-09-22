@@ -16,7 +16,9 @@ const VnClock = () => {
         hour12: false
       }).formatToParts(new Date())
       const get = type => parts.find(p => p.type === type)?.value
-      setTime(`${get('hour')}:${get('minute')} ${get('day')}, ${get('month')} (GMT+7)`)
+      setTime(
+        `${get('hour')}:${get('minute')} ${get('day')}, ${get('month')} (GMT+7)`
+      )
     }
     update()
     // Chỉ hiển thị giờ/phút → cập nhật 15s là đủ mượt, giảm 15x số lần render
@@ -29,7 +31,7 @@ const VnClock = () => {
   return (
     <Text
       as="span"
-      fontSize="sm"
+      fontSize={{ base: 'xs', sm: 'sm' }}
       fontFamily="'M PLUS Rounded 1c'"
       fontWeight={700}
       color={clockColor}

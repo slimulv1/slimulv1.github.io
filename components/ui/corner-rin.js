@@ -171,7 +171,7 @@ const CornerRin = () => {
     <Box
       position="fixed"
       right={inset}
-      bottom={inset}
+      bottom={`calc(${inset} + env(safe-area-inset-bottom))`}
       zIndex={30}
       css={{
         '& button:focus-visible': {
@@ -321,7 +321,9 @@ const CornerRin = () => {
                   boxShadow={bubbleShadow}
                   px={4}
                   py={2.5}
-                  whiteSpace="nowrap"
+                  // Mobile hẹp: cho wrap (tên repo dài không bao giờ tràn màn hình);
+                  // từ sm trở lên giữ nowrap 1 dòng như cũ.
+                  whiteSpace={{ base: 'normal', sm: 'nowrap' }}
                   css={{
                     // đuôi bong bóng: lớp viền
                     '&::before': {

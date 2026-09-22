@@ -33,7 +33,7 @@ const Main = ({ children }) => {
 
       <NavBar />
 
-      <Container maxW="container.md" pt={14}>
+      <Container maxW="container.md" pt={{ base: 20, sm: 14 }}>
         <LazyVoxelDog />
 
         {children}
