@@ -20,7 +20,6 @@ const EnterOverlay = () => {
   const textColor = useColorModeValue('gray.800', 'whiteAlpha.900')
   const pillBg = useColorModeValue('whiteAlpha.700', 'whiteAlpha.100')
   const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
-  const hintColor = useColorModeValue('gray.500', 'whiteAlpha.500')
 
   // Khóa cuộn trang trong khi overlay đang phủ
   useEffect(() => {
@@ -123,17 +122,6 @@ const EnterOverlay = () => {
                 </motion.span>
               </Flex>
             </motion.div>
-
-            <Text
-              fontFamily={mono}
-              fontSize="xs"
-              letterSpacing="wide"
-              color={hintColor}
-              opacity={0.75}
-              userSelect="none"
-            >
-              ♪ nhạc nền sẽ tự bật
-            </Text>
           </Box>
         </motion.div>
       )}
