@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import {
@@ -8,10 +7,13 @@ import {
 import { DiscordBadges } from './discord-badges'
 // Bubble "Rin xem chung" dùng chung (xem lib/rin-peek.js)
 import { rinPeek, rinClear } from '../../lib/rin-peek'
+// Ngôn ngữ giao diện xoay vòng 15s + từ điển text (vi/en/ja)
+import { useInterfaceLang } from '../../lib/interface-lang'
+import { UI } from '../../lib/interface-labels'
 
-// Trạng thái: nhãn xoay vòng 3 thứ tiếng (giống vòng lặp lời chào của Rin) —
-// Việt → Anh → Nhật, mỗi 5 giây đổi 1 lần; màu dot giữ theo Discord chuẩn.
-const STATUS = {
+// Trạng thái: nhãn theo 3 thứ tiếng, đổi theo vòng quay giao diện 15s;
+// màu dot giữ theo Discord chuẩn. Export để status-dot dùng chung.
+export const STATUS = {
   online: {
     labels: { vi: 'Trực tuyến', en: 'Online', ja: 'オンライン' },
     color: '#73daca'
@@ -29,7 +31,6 @@ const STATUS = {
     color: '#9b9ba5'
   }
 }
-const LANG_ORDER = ['vi', 'en', 'ja']
 
 // Màu viền avatar theo trạng thái (Discord colors chuẩn)
 const AVATAR_COLOR = {
@@ -61,7 +62,7 @@ export const DiscordDot = ({ color, pulse = false, size = 10 }) => (
   />
 )
 
-const getActivityText = presence => {
+const getActivityText = (presence, lang) => {
   if (!presence) return null
 
   const spotify = presence.spotify && presence.listening_to_spotify
@@ -71,7 +72,7 @@ const getActivityText = presence => {
   if (spotify) {
     return {
       icon: '🎵',
-      text: `Đang nghe: ${spotify.song} - ${spotify.artist}`,
+      text: `${UI.listening[lang]} ${spotify.song} - ${spotify.artist}`,
       sub: spotify.album,
       art: spotify.album_art_url
     }
@@ -79,7 +80,7 @@ const getActivityText = presence => {
   if (game) {
     return {
       icon: '🎮',
-      text: `Đang chơi: ${game.name}`,
+      text: `${UI.playing[lang]} ${game.name}`,
       sub: game.details || game.state || null
     }
   }
@@ -95,15 +96,8 @@ const StatusBar = () => {
   const muted = useColorModeValue('gray.600', 'whiteAlpha.700')
   const pillBg = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
   const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
-  // Vòng lặp ngôn ngữ: mỗi 5 giây đổi 1 ngôn ngữ — Việt → Anh → Nhật → lại Việt
-  const [langIdx, setLangIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(
-      () => setLangIdx(i => (i + 1) % LANG_ORDER.length),
-      5000
-    )
-    return () => clearInterval(t)
-  }, [])
+  // Ngôn ngữ theo vòng quay chung của giao diện (15s): Việt → Anh → Nhật
+  const { lang } = useInterfaceLang()
 
   if (!presence) {
     return (
@@ -116,7 +110,7 @@ const StatusBar = () => {
         css={{ backdropFilter: 'blur(10px)' }}
       >
         <Text fontSize="sm" opacity={0.8}>
-          Đang kết nối trạng thái Discord...
+          {UI.connecting[lang]}
         </Text>
       </Box>
     )
@@ -125,7 +119,7 @@ const StatusBar = () => {
   const status = STATUS[presence.discord_status] || STATUS.offline
   const avatarColor =
     AVATAR_COLOR[presence.discord_status] || AVATAR_COLOR.offline
-  const activity = getActivityText(presence)
+  const activity = getActivityText(presence, lang)
   const online = presence.discord_status === 'online'
   const user = presence.discord_user || {}
   const avatar = user.avatar
@@ -245,15 +239,15 @@ const StatusBar = () => {
         >
           <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap">
             <DiscordDot color={status.color} pulse={online} />
-            {/* key=label → mỗi 5s đổi ngôn ngữ remount span, chạy micro-fade 0.25s mượt */}
+            {/* key=label → đổi ngôn ngữ theo vòng quay 15s, remount span chạy micro-fade 0.25s mượt */}
             <motion.span
-              key={status.labels[LANG_ORDER[langIdx]]}
+              key={status.labels[lang]}
               initial={{ opacity: 0, y: 2 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               style={{ display: 'inline-block' }}
             >
-              {status.labels[LANG_ORDER[langIdx]]}
+              {status.labels[lang]}
             </motion.span>
           </Text>
           {activity ? (
@@ -283,7 +277,7 @@ const StatusBar = () => {
             </Flex>
           ) : (
             <Text fontSize="xs" color={muted}>
-              {online ? 'Sẵn sàng trò chuyện' : 'Đã nghỉ ngơi'}
+              {online ? UI.readyToChat[lang] : UI.takingRest[lang]}
             </Text>
           )}
         </Flex>

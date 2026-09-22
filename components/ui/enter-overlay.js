@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useInterfaceLang } from '../../lib/interface-lang'
+import { UI } from '../../lib/interface-labels'
 
 const mono =
   "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
@@ -12,6 +14,8 @@ const mono =
  */
 const EnterOverlay = () => {
   const [entered, setEntered] = useState(false)
+  // Text "bấm để vào" theo vòng quay ngôn ngữ giao diện (15s)
+  const { lang } = useInterfaceLang()
 
   const veil = useColorModeValue(
     'rgba(240, 231, 219, 0.62)',
@@ -110,7 +114,7 @@ const EnterOverlay = () => {
                   color={textColor}
                   userSelect="none"
                 >
-                  click to enter...
+                  {UI.clickToEnter[lang]}
                 </Text>
                 <motion.span
                   animate={{ opacity: [1, 0, 1] }}

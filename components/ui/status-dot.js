@@ -3,30 +3,20 @@ import {
   useDiscordPresence,
   DISCORD_USER_ID
 } from '../../lib/use-discord-presence'
-import { DiscordDot } from './status-bar'
-
-const STATUS_LABEL = {
-  online: 'Trực tuyến',
-  idle: 'Chờ chút',
-  dnd: 'Không làm phiền',
-  offline: 'Ngoại tuyến'
-}
-
-const STATUS_COLOR = {
-  online: '#73daca',
-  idle: '#faa61a',
-  dnd: '#f04747',
-  offline: '#9b9ba5'
-}
+import { useInterfaceLang } from '../../lib/interface-lang'
+import { DiscordDot, STATUS } from './status-bar'
 
 const StatusDot = () => {
   const presence = useDiscordPresence(DISCORD_USER_ID)
+  // Tooltip trạng thái theo ngôn ngữ giao diện đang xoay vòng (15s)
+  const { lang } = useInterfaceLang()
   const hoverBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.100')
 
   if (!presence) return null
 
-  const status = presence.discord_status || 'offline'
-  const online = status === 'online'
+  const raw = presence.discord_status || 'offline'
+  const status = STATUS[raw] || STATUS.offline
+  const online = raw === 'online'
 
   return (
     <Box
@@ -36,12 +26,12 @@ const StatusDot = () => {
       bg={presence ? hoverBg : undefined}
       display="inline-flex"
       alignItems="center"
-      title={STATUS_LABEL[status]}
-      aria-label={`Discord: ${STATUS_LABEL[status]}`}
+      title={`Discord: ${status.labels[lang]}`}
+      aria-label={`Discord: ${status.labels[lang]}`}
       cursor="default"
       userSelect="none"
     >
-      <DiscordDot color={STATUS_COLOR[status] || STATUS_COLOR.offline} pulse={online} size={8} />
+      <DiscordDot color={status.color} pulse={online} size={8} />
     </Box>
   )
 }

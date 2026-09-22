@@ -15,28 +15,15 @@ import pinnedRepos from '../../lib/pinned-repos.json'
 import { fetchLivePinned } from '../../lib/live-pinned'
 // Bubble "Rin xem chung" dùng chung (Projects / Discord / On the web — xem lib/rin-peek.js)
 import { rinPeek, rinClear } from '../../lib/rin-peek'
+// Ngôn ngữ giao diện xoay vòng 15s + từ điển text/timeAgo (vi/en/ja)
+import { useInterfaceLang } from '../../lib/interface-lang'
+import { UI, timeAgo } from '../../lib/interface-labels'
 
 const mono =
   "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
 
-// "push X trước" — thời gian tương đối bằng tiếng Việt
-const timeAgo = dateStr => {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  if (diff < 0) return 'vừa xong'
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'vừa xong'
-  const hours = Math.floor(mins / 60)
-  if (hours < 1) return `${mins} phút trước`
-  const days = Math.floor(hours / 24)
-  if (days < 1) return `${hours} giờ trước`
-  const weeks = Math.floor(days / 7)
-  if (weeks < 1) return `${days} ngày trước`
-  const months = Math.floor(days / 30)
-  if (months < 1) return `${weeks} tuần trước`
-  const years = Math.floor(days / 365)
-  if (years < 1) return `${months} tháng trước`
-  return `${years} năm trước`
-}
+// "push X trước" — thời gian tương đối theo ngôn ngữ giao diện
+// (dùng chung timeAgo từ lib/interface-labels.js, khớp vòng xoay 15s)
 
 // ANIMATION: mỗi card tự điều khiển (initial/whileInView riêng) chứ không thừa hưởng từ container.
 // Lý do: danh sách live có thể thêm card MỚI vào sau khi container đã chạy whileInView xong (once:true)
@@ -66,11 +53,13 @@ const ProjectCard = ({ repo, index = 0 }) => {
   const hoverBorder = useColorModeValue('#2b6f6a', 'grassTeal')
   // "push X trước" tính client-side để không bị đóng băng lúc build.
   // Live data (quét profile) không có pushedAt → không hiện dòng này.
+  // timeAgo theo ngôn ngữ giao diện đang xoay vòng → recompute khi lang đổi.
+  const { lang } = useInterfaceLang()
   const [pushedLabel, setPushedLabel] = useState(null)
   useEffect(() => {
-    if (repo.pushedAt) setPushedLabel(timeAgo(repo.pushedAt))
+    if (repo.pushedAt) setPushedLabel(timeAgo(lang, repo.pushedAt))
     else setPushedLabel(null)
-  }, [repo.pushedAt])
+  }, [repo.pushedAt, lang])
 
   return (
     <motion.div
@@ -136,7 +125,12 @@ const ProjectCard = ({ repo, index = 0 }) => {
             </Text>
             <Flex align="center" gap={2.5} flexShrink={0}>
               {repo.stars > 0 && (
-                <Flex align="center" gap={1} color={mutedColor} title="Stars">
+                <Flex
+                  align="center"
+                  gap={1}
+                  color={mutedColor}
+                  title={UI.stars[lang]}
+                >
                   <IoStar size="12" aria-hidden="true" />
                   <Text fontSize="xs" fontFamily={mono}>
                     {repo.stars}

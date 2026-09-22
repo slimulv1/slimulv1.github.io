@@ -20,6 +20,9 @@ import { FaSteam } from 'react-icons/fa6'
 import Image from 'next/image'
 import { fetchGitHubData } from '../lib/github-data'
 import { rinPeek, rinClear } from '../lib/rin-peek'
+// Ngôn ngữ giao diện xoay vòng 15s + từ điển text (vi/en/ja)
+import { useInterfaceLang } from '../lib/interface-lang'
+import { UI } from '../lib/interface-labels'
 
 // BUILD TIME: kéo danh sách project từ GitHub để dựng khung SSR ban đầu.
 // Phần live phía client tự quét lại phần pin khi load trang (xem lib/live-pinned.js).
@@ -49,95 +52,96 @@ const WebLink = ({ href, icon: Icon, label }) => (
   </ListItem>
 )
 
-const Home = ({ github }) => (
-  <Layout>
-    <Container>
-      <StatusBar />
+const Home = ({ github }) => {
+  // Ngôn ngữ theo vòng xoay chung của giao diện (15s): Việt → Anh → Nhật
+  const { lang } = useInterfaceLang()
+  return (
+    <Layout>
+      <Container>
+        <StatusBar />
 
-      <Box display={{ md: 'flex' }}>
-        <Box flexGrow={1}>
-          <Heading as="h2" variant="page-title">
-            Slimu Neet
-          </Heading>
-          <p>
-            Just a plain human with hobbies and a passion for linux &amp; open
-            source.
-          </p>
-        </Box>
-        <Box
-          flexShrink={0}
-          mt={{ base: 4, md: 0 }}
-          ml={{ md: 6 }}
-          textAlign="center"
-        >
+        <Box display={{ md: 'flex' }}>
+          <Box flexGrow={1}>
+            <Heading as="h2" variant="page-title">
+              Slimu Neet
+            </Heading>
+            <p>{UI.intro[lang]}</p>
+          </Box>
           <Box
-            borderColor="whiteAlpha.800"
-            borderWidth={2}
-            borderStyle="solid"
-            w="100px"
-            h="100px"
-            display="inline-block"
-            borderRadius="full"
-            overflow="hidden"
+            flexShrink={0}
+            mt={{ base: 4, md: 0 }}
+            ml={{ md: 6 }}
+            textAlign="center"
           >
-            <Image
-              src="/images/yurucamp-avatar.png"
-              alt="Profile image"
-              width="100"
-              height="100"
-              style={{ objectFit: 'cover' }}
-            />
+            <Box
+              borderColor="whiteAlpha.800"
+              borderWidth={2}
+              borderStyle="solid"
+              w="100px"
+              h="100px"
+              display="inline-block"
+              borderRadius="full"
+              overflow="hidden"
+            >
+              <Image
+                src="/images/yurucamp-avatar.png"
+                alt="Profile image"
+                width="100"
+                height="100"
+                style={{ objectFit: 'cover' }}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
 
-      <Section delay={0.1}>
-        <Heading as="h3" variant="section-title">
-          I ♥
-        </Heading>
-        <Paragraph>Just go ahead and marry your bed△</Paragraph>
-      </Section>
+        <Section delay={0.1}>
+          <Heading as="h3" variant="section-title">
+            I ♥
+          </Heading>
+          <Paragraph>{UI.marryBed[lang]}</Paragraph>
+        </Section>
 
-      <Section delay={0.2}>
-        <Heading as="h3" variant="section-title">
-          Projects
-        </Heading>
-        <Projects repos={github.projects} />
-      </Section>
+        <Section delay={0.2}>
+          <Heading as="h3" variant="section-title">
+            {UI.projects[lang]}
+          </Heading>
+          <Projects repos={github.projects} />
+        </Section>
 
-      <Section delay={0.3}>
-        <Heading as="h3" variant="section-title">
-          On the web
-        </Heading>
-        <List>
-          <WebLink
-            href="https://github.com/slimulv1/"
-            icon={IoLogoGithub}
-            label="@slimulv1"
-          />
-          <WebLink
-            href="https://x.com/slimu3620"
-            icon={IoLogoTwitter}
-            label="@slimu3620"
-          />
-          <WebLink
-            href="https://www.instagram.com/29.thg11_/"
-            icon={IoLogoInstagram}
-            label="@29.thg11_"
-          />
-          <WebLink
-            href="https://steamcommunity.com/id/virusneet"
-            icon={FaSteam}
-            label="@virusneet"
-          />
-        </List>
-      </Section>
+        <Section delay={0.3}>
+          <Heading as="h3" variant="section-title">
+            {UI.onTheWeb[lang]}
+          </Heading>
+          <List>
+            <WebLink
+              href="https://github.com/slimulv1/"
+              icon={IoLogoGithub}
+              label="@slimulv1"
+            />
+            <WebLink
+              href="https://x.com/slimu3620"
+              icon={IoLogoTwitter}
+              label="@slimu3620"
+            />
+            <WebLink
+              href="https://www.instagram.com/29.thg11_/"
+              icon={IoLogoInstagram}
+              label="@29.thg11_"
+            />
+            <WebLink
+              href="https://steamcommunity.com/id/virusneet"
+              icon={FaSteam}
+              label="@virusneet"
+            />
+          </List>
+        </Section>
 
-      <BgMusic />
-      <EnterOverlay />
-      <CornerRin />
-    </Container>
-  </Layout>
-)
+        <BgMusic />
+        <EnterOverlay />
+        <CornerRin />
+      </Container>
+    </Layout>
+  )
+}
 
 export default Home
