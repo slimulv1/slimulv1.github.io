@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import {
@@ -8,12 +9,27 @@ import { DiscordBadges } from './discord-badges'
 // Bubble "Rin xem chung" dùng chung (xem lib/rin-peek.js)
 import { rinPeek, rinClear } from '../../lib/rin-peek'
 
+// Trạng thái: nhãn xoay vòng 3 thứ tiếng (giống vòng lặp lời chào của Rin) —
+// Việt → Anh → Nhật, mỗi 5 giây đổi 1 lần; màu dot giữ theo Discord chuẩn.
 const STATUS = {
-  online: { label: 'Trực tuyến', color: '#73daca' },
-  idle: { label: 'Chờ chút', color: '#faa61a' },
-  dnd: { label: 'Không làm phiền', color: '#f04747' },
-  offline: { label: 'Ngoại tuyến', color: '#9b9ba5' }
+  online: {
+    labels: { vi: 'Trực tuyến', en: 'Online', ja: 'オンライン' },
+    color: '#73daca'
+  },
+  idle: {
+    labels: { vi: 'Chờ chút', en: 'Idle', ja: '退席中' },
+    color: '#faa61a'
+  },
+  dnd: {
+    labels: { vi: 'Không làm phiền', en: 'Do not disturb', ja: '取り込み中' },
+    color: '#f04747'
+  },
+  offline: {
+    labels: { vi: 'Ngoại tuyến', en: 'Offline', ja: 'オフライン' },
+    color: '#9b9ba5'
+  }
 }
+const LANG_ORDER = ['vi', 'en', 'ja']
 
 // Màu viền avatar theo trạng thái (Discord colors chuẩn)
 const AVATAR_COLOR = {
@@ -79,6 +95,15 @@ const StatusBar = () => {
   const muted = useColorModeValue('gray.600', 'whiteAlpha.700')
   const pillBg = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
   const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
+  // Vòng lặp ngôn ngữ: mỗi 5 giây đổi 1 ngôn ngữ — Việt → Anh → Nhật → lại Việt
+  const [langIdx, setLangIdx] = useState(0)
+  useEffect(() => {
+    const t = setInterval(
+      () => setLangIdx(i => (i + 1) % LANG_ORDER.length),
+      5000
+    )
+    return () => clearInterval(t)
+  }, [])
 
   if (!presence) {
     return (
@@ -220,7 +245,16 @@ const StatusBar = () => {
         >
           <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap">
             <DiscordDot color={status.color} pulse={online} />
-            {status.label}
+            {/* key=label → mỗi 5s đổi ngôn ngữ remount span, chạy micro-fade 0.25s mượt */}
+            <motion.span
+              key={status.labels[LANG_ORDER[langIdx]]}
+              initial={{ opacity: 0, y: 2 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              style={{ display: 'inline-block' }}
+            >
+              {status.labels[LANG_ORDER[langIdx]]}
+            </motion.span>
           </Text>
           {activity ? (
             <Flex alignItems="center" columnGap={2}>
