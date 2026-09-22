@@ -8,7 +8,6 @@ import {
   ListItem
 } from '@chakra-ui/react'
 import Paragraph from '../components/ui/paragraph'
-import { BioSection, BioYear } from '../components/ui/bio'
 import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
 import StatusBar from '../components/ui/status-bar'
@@ -56,47 +55,6 @@ const Home = () => (
       </Box>
 
       <Section delay={0.1}>
-        <Heading as="h3" variant="section-title">
-          Work
-        </Heading>
-        <Paragraph>
-          Slimu là một freelancer hoạt động tại thành phố Hồ Chí Minh, với niềm
-          đam mê xây dựng những sản phẩm và dịch vụ kỹ thuật số. Anh thích khám
-          phá những công nghệ mới và biến ý tưởng thành hiện thực bằng code.
-        </Paragraph>
-      </Section>
-
-      <Section delay={0.2}>
-        <Heading as="h3" variant="section-title">
-          Bio
-        </Heading>
-        <BioSection>
-          <BioYear>1997</BioYear>
-          Sinh ra ở thành phố Long Xuyên
-        </BioSection>
-        <BioSection>
-          <BioYear>2015</BioYear>
-          Học tại trường Đại học An Giang
-        </BioSection>
-        <BioSection>
-          <BioYear>2018</BioYear>
-          Làm việc tại Công ty Máy tính Tân Doanh
-        </BioSection>
-        <BioSection>
-          <BioYear>2019</BioYear>
-          Làm việc tại Tin học Ngôi Sao
-        </BioSection>
-        <BioSection>
-          <BioYear>2021</BioYear>
-          Bắt đầu học và làm 3D
-        </BioSection>
-        <BioSection>
-          <BioYear>2026</BioYear>
-          Freelancer tại thành phố Hồ Chí Minh
-        </BioSection>
-      </Section>
-
-      <Section delay={0.3}>
         <Heading as="h3" variant="section-title">
           I ♥
         </Heading>
