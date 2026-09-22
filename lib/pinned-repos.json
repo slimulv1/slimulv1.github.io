@@ -38,25 +38,5 @@
     },
     "stars": 0,
     "url": "https://github.com/slimulv1/epos-gsx300-linux"
-  },
-  {
-    "name": "opencode-dotfiles",
-    "description": "opencode dotfile",
-    "language": {
-      "name": "Python",
-      "color": "#3572A5"
-    },
-    "stars": 0,
-    "url": "https://github.com/slimulv1/opencode-dotfiles"
-  },
-  {
-    "name": "wmcirno",
-    "description": "WindowMaker dockapp Cirno GIF",
-    "language": {
-      "name": "C",
-      "color": "#555555"
-    },
-    "stars": 0,
-    "url": "https://github.com/slimulv1/wmcirno"
   }
 ]
