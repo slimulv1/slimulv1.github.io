@@ -36,7 +36,7 @@ const BgMusic = () => {
       })
     }
 
-    const events = ['pointerdown', 'keydown', 'touchstart']
+    const events = ['pointerdown', 'keydown', 'touchstart', 'click']
     const cleanup = () => {
       events.forEach(e =>
         window.removeEventListener(e, tryPlay, { capture: true })

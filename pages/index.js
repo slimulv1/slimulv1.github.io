@@ -12,6 +12,7 @@ import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
 import Projects from '../components/ui/projects'
 import BgMusic from '../components/ui/bg-music'
+import EnterOverlay from '../components/ui/enter-overlay'
 import StatusBar from '../components/ui/status-bar'
 import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
@@ -125,6 +126,7 @@ const Home = () => (
       </Section>
 
       <BgMusic />
+      <EnterOverlay />
     </Container>
   </Layout>
 )
