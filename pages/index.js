@@ -11,6 +11,7 @@ import Paragraph from '../components/ui/paragraph'
 import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
 import Projects from '../components/ui/projects'
+import BgMusic from '../components/ui/bg-music'
 import StatusBar from '../components/ui/status-bar'
 import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
@@ -122,6 +123,8 @@ const Home = () => (
           </ListItem>
         </List>
       </Section>
+
+      <BgMusic />
     </Container>
   </Layout>
 )
