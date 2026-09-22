@@ -37,8 +37,7 @@ const pool = slot => [
 ]
 
 /**
- * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải (theo vị trí rin.png
- * bên KabosuNeko), mang đúng hiệu ứng/chức năng của nadeshiko.png — hover
+ * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải — hover
  * thấy tooltip "Say hi" trên đầu, click → bounce + speech bubble chào theo
  * khung giờ trong ngày, bấm liên tục chạy hết câu Việt → Anh → Nhật → lại Việt.
  */
@@ -113,7 +112,7 @@ const CornerRin = () => {
           outlineOffset: 4,
           borderRadius: 12
         },
-        // tooltip "Say hi" trên đầu — đúng như nadeshiko bên KabosuNeko
+        // tooltip "Say hi" hiện trên đầu khi hover
         '& [data-tooltip]::before': {
           content: 'attr(data-tooltip)',
           marginBottom: '8px',
