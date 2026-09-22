@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { IoMusicalNotes } from 'react-icons/io5'
 
 const TRACK_SRC = '/music/loch-to-tabibito.flac'
+const TRACK_FALLBACK_SRC = '/music/loch-to-tabibito.m4a'
 const TRACK_NAME = 'Loch to Tabibito'
 
 // Equalizer 3 vạch nhảy khi đang phát
@@ -76,8 +77,14 @@ const BgMusic = () => {
 
   return (
     <>
-      {/* Nhạc nền: chỉ âm thanh, không hiển thị gì */}
-      <audio ref={audioRef} src={TRACK_SRC} loop preload="metadata" />
+      {/* Nhạc nền: chỉ âm thanh, không hiển thị gì.
+          FLAC là nguồn chính (chất lượng lossless); nếu nguồn đó không
+          phục vụ được (vd. giới hạn 25MB/file của Cloudflare Pages),
+          trình duyệt tự fallback sang bản AAC. */}
+      <audio ref={audioRef} loop preload="metadata">
+        <source src={TRACK_SRC} type="audio/flac" />
+        <source src={TRACK_FALLBACK_SRC} type="audio/mp4" />
+      </audio>
 
       <motion.button
         onClick={toggle}
