@@ -2,21 +2,41 @@ import { useEffect, useRef, useState } from 'react'
 import { Box, Text, useBreakpointValue, useColorModeValue } from '@chakra-ui/react'
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
 
-const GREETINGS = {
-  morning: ['Buổi sáng tốt lành', 'Trà sáng nhé?', 'Đi cắm trại thôi'],
-  afternoon: ['Chào buổi chiều', 'Thời tiết đẹp ghê', 'Nghỉ ngơi chút nào'],
-  evening: ['Buổi tối vui vẻ', 'Đốt lửa trại nha', 'Nghe nhạc nền đi ~'],
-  night: ['Ngủ ngon nhé', 'Còn thức à?', 'Mai gặp lại nhé']
-}
+// Chuỗi chào tuần tự: chạy hết câu tiếng Việt → tiếng Anh → tiếng Nhật → quay lại Việt
+const SEQUENCE = [
+  // ——— tiếng Việt ———
+  'Buổi sáng tốt lành', 'Trà sáng nhé?', 'Đi cắm trại thôi',
+  'Chào buổi chiều', 'Thời tiết đẹp ghê', 'Nghỉ ngơi chút nào',
+  'Buổi tối vui vẻ', 'Đốt lửa trại nha', 'Nghe nhạc nền đi ~',
+  'Ngủ ngon nhé', 'Còn thức à?', 'Mai gặp lại nhé',
+  // ——— tiếng Anh ———
+  'Good morning!', 'A cup of tea?', "Let's go camping!",
+  'Good afternoon!', 'The weather is so nice.', 'Take a little break.',
+  'Good evening!', 'Campfire time.', 'Enjoy the background music ~',
+  'Good night...', 'Still awake?', 'See you tomorrow!',
+  // ——— tiếng Nhật ———
+  'おはよう', 'お茶にする？', 'キャンプ行こう！',
+  'こんにちは', '天気がいいね', 'ちょっと休もう',
+  'こんばんは', '焚き火の時間だよ', '音楽を聴こう〜',
+  'おやすみ...', 'まだ起きてるの？', 'また明日ね'
+]
+
+// Vị trí bắt đầu mỗi khung giờ (câu VI đầu tiên của slot) cho lần chào tự động
+const SLOT_START = { morning: 0, afternoon: 3, evening: 6, night: 9 }
+
+const slotOf = h =>
+  h < 5 ? 'night' : h < 11 ? 'morning' : h < 17 ? 'afternoon' : h < 22 ? 'evening' : 'night'
 
 /**
  * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải (theo vị trí rin.png
- * bên KabosuNeko), mang đúng hiệu ứng/chức năng của nadeshiko.png — click →
- * bounce + speech bubble chào theo giờ trong ngày, tự chào 1 lần sau khi load.
+ * bên KabosuNeko), mang đúng hiệu ứng/chức năng của nadeshiko.png — hover
+ * thấy tooltip "Say hi" trên đầu, click → bounce + speech bubble chào theo
+ * chuỗi tuần tự: hết câu tiếng Việt → tiếng Anh → tiếng Nhật → quay lại Việt.
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)
   const controls = useAnimationControls()
+  const idx = useRef(-1)
   const bubbleTimer = useRef(null)
   const reduced = useRef(false)
 
@@ -26,8 +46,11 @@ const CornerRin = () => {
   const bubbleBorder = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
   const bubbleText = useColorModeValue('gray.800', 'whiteAlpha.900')
 
-  const slotOf = h =>
-    h < 5 ? 'night' : h < 11 ? 'morning' : h < 17 ? 'afternoon' : h < 22 ? 'evening' : 'night'
+  const showBubble = text => {
+    setBubble(text)
+    clearTimeout(bubbleTimer.current)
+    bubbleTimer.current = setTimeout(() => setBubble(null), 3000)
+  }
 
   const greet = () => {
     // bounce — cùng keyframes nade-bounce của nadeshiko
@@ -38,16 +61,18 @@ const CornerRin = () => {
         transition: { duration: 0.55, ease: 'easeInOut' }
       })
     }
-    const lines = GREETINGS[slotOf(new Date().getHours())]
-    setBubble(lines[Math.floor(Math.random() * lines.length)])
-    clearTimeout(bubbleTimer.current)
-    bubbleTimer.current = setTimeout(() => setBubble(null), 3000)
+    idx.current = (idx.current + 1) % SEQUENCE.length
+    showBubble(SEQUENCE[idx.current])
   }
 
   useEffect(() => {
     reduced.current =
       (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || false
-    const t = setTimeout(greet, 500) // tự chào 1 lần, như nadeshiko
+    // tự chào 1 lần theo khung giờ, như nadeshiko (bắt đầu từ câu VI đầu slot)
+    const t = setTimeout(() => {
+      idx.current = SLOT_START[slotOf(new Date().getHours())]
+      showBubble(SEQUENCE[idx.current])
+    }, 500)
     return () => {
       clearTimeout(t)
       clearTimeout(bubbleTimer.current)
@@ -67,6 +92,48 @@ const CornerRin = () => {
           outline: '2px solid #73daca',
           outlineOffset: 4,
           borderRadius: 12
+        },
+        // tooltip "Say hi" trên đầu — đúng như nadeshiko bên KabosuNeko
+        '& [data-tooltip]::before': {
+          content: 'attr(data-tooltip)',
+          marginBottom: '8px',
+          padding: '6px 12px',
+          borderRadius: 10,
+          background: bubbleBg,
+          color: bubbleText,
+          fontSize: 12,
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%) translateY(8px)',
+          opacity: 0,
+          visibility: 'hidden',
+          transition: 'opacity 0.2s ease, transform 0.2s ease, visibility 0.2s',
+          pointerEvents: 'none',
+          zIndex: 32
+        },
+        '& [data-tooltip]::after': {
+          content: "''",
+          marginBottom: '-2px',
+          border: '5px solid transparent',
+          borderTopColor: bubbleBg,
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%) translateY(8px)',
+          opacity: 0,
+          visibility: 'hidden',
+          transition: 'opacity 0.2s ease, transform 0.2s ease, visibility 0.2s',
+          pointerEvents: 'none',
+          zIndex: 32
+        },
+        '& [data-tooltip]:hover::before, & [data-tooltip]:hover::after': {
+          opacity: 1,
+          visibility: 'visible',
+          transform: 'translateX(-50%) translateY(0)'
         }
       }}
     >
@@ -78,8 +145,8 @@ const CornerRin = () => {
         <motion.button
           animate={controls}
           type="button"
+          data-tooltip="Say hi"
           aria-label="Nói chuyện với Rin"
-          title="Say hi, Rin!"
           onClick={greet}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
