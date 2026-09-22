@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Box, Flex, Text, SimpleGrid, useColorModeValue, Link } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import { IoStar, IoArrowForward } from 'react-icons/io5'
+// Snapshot thủ công — chỉ dùng làm fallback khi GitHub không có dữ liệu (xem lib/github-data.js)
 import pinnedRepos from '../../lib/pinned-repos.json'
 
 const mono =
@@ -153,7 +154,7 @@ const ProjectCard = ({ repo }) => {
   )
 }
 
-const Projects = () => {
+const Projects = ({ repos = pinnedRepos }) => {
   return (
     <motion.div
       variants={listVariants}
@@ -162,7 +163,7 @@ const Projects = () => {
       viewport={{ once: true, margin: '-40px' }}
     >
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-        {pinnedRepos.map(repo => (
+        {repos.map(repo => (
           <ProjectCard key={repo.name} repo={repo} />
         ))}
       </SimpleGrid>

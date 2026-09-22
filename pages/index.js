@@ -18,8 +18,16 @@ import StatusBar from '../components/ui/status-bar'
 import { IoLogoTwitter, IoLogoInstagram, IoLogoGithub } from 'react-icons/io5'
 import { FaSteam } from 'react-icons/fa6'
 import Image from 'next/image'
+import { fetchGitHubData } from '../lib/github-data'
 
-const Home = () => (
+// Chạy ở BUILD TIME: kéo tên/bio + danh sách project từ GitHub,
+// đổ thẳng vào HTML tĩnh. Chi tiết fallback xem lib/github-data.js.
+export async function getStaticProps() {
+  const github = await fetchGitHubData()
+  return { props: { github } }
+}
+
+const Home = ({ github }) => (
   <Layout>
     <Container>
       <StatusBar />
@@ -27,9 +35,9 @@ const Home = () => (
       <Box display={{ md: 'flex' }}>
         <Box flexGrow={1}>
           <Heading as="h2" variant="page-title">
-            Slimu Neet
+            {github.profile.name}
           </Heading>
-          <p>Just a plain human with hobbies and a passion for linux &amp; open source.</p>
+          <p>{github.profile.bio}</p>
         </Box>
         <Box
           flexShrink={0}
@@ -71,7 +79,7 @@ const Home = () => (
         <Heading as="h3" variant="section-title">
           Projects
         </Heading>
-        <Projects />
+        <Projects repos={github.projects} />
       </Section>
 
       <Section delay={0.3}>
