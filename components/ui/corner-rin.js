@@ -51,9 +51,13 @@ const CornerRin = () => {
 
   const imgH = useBreakpointValue({ base: 72, sm: 96, md: 128 })
   const inset = useBreakpointValue({ base: '8px', sm: '16px', md: '16px' })
-  const bubbleBg = useColorModeValue('whiteAlpha.900', 'rgba(23, 25, 42, 0.92)')
-  const bubbleBorder = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
+  const bubbleBg = useColorModeValue('rgba(255, 255, 255, 0.92)', 'rgba(23, 25, 42, 0.92)')
+  const bubbleBorder = useColorModeValue('rgba(0, 0, 0, 0.18)', 'rgba(255, 255, 255, 0.24)')
   const bubbleText = useColorModeValue('gray.800', 'whiteAlpha.900')
+  const bubbleSheen = useColorModeValue(
+    'linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0) 55%)',
+    'linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 55%)'
+  )
 
   const showBubble = text => {
     setBubble(text)
@@ -105,7 +109,6 @@ const CornerRin = () => {
       right={inset}
       bottom={inset}
       zIndex={30}
-      lineHeight={0}
       css={{
         '& button:focus-visible': {
           outline: '2px solid #73daca',
@@ -193,42 +196,70 @@ const CornerRin = () => {
             {bubble && (
               <motion.div
                 key="rin-bubble"
-                initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, scale: 0.5, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.5, y: 12 }}
+                transition={{ type: 'spring', stiffness: 340, damping: 26 }}
                 style={{
                   position: 'absolute',
-                  right: 'calc(100% + 12px)',
+                  right: 'calc(100% + 14px)',
                   bottom: '35%',
-                  maxWidth: 240,
-                  padding: '10px 16px',
-                  borderRadius: 16,
-                  background: bubbleBg,
-                  border: '1px solid',
-                  borderColor: bubbleBorder,
-                  backdropFilter: 'blur(10px)',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
-                  whiteSpace: 'nowrap',
+                  transformOrigin: 'right center',
                   pointerEvents: 'none',
                   zIndex: 31
                 }}
               >
-                <Text fontSize="13px" fontWeight="semibold" color={bubbleText} userSelect="none">
-                  {bubble}
-                </Text>
-                {/* mũi tên trỏ về phía Rin */}
                 <Box
-                  position="absolute"
-                  top="50%"
-                  right="-7px"
-                  transform="translateY(-50%)"
-                  w={0}
-                  h={0}
-                  border="8px solid transparent"
-                  borderLeft="8px solid"
-                  borderLeftColor={bubbleBg}
-                />
+                  position="relative"
+                  maxWidth={240}
+                  borderRadius="18px 18px 18px 6px"
+                  bg={bubbleBg}
+                  border="1px solid"
+                  borderColor={bubbleBorder}
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07)"
+                  px={4}
+                  py={2.5}
+                  whiteSpace="nowrap"
+                  css={{
+                    // đuôi bong bóng: lớp viền
+                    '&::before': {
+                      content: "''",
+                      position: 'absolute',
+                      right: '-12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      borderTop: '9px solid transparent',
+                      borderBottom: '9px solid transparent',
+                      borderLeft: `12px solid ${bubbleBorder}`,
+                      zIndex: -10
+                    },
+                    // đuôi bong bóng: lớp lõi (cùng màu thân, tạo viền cho đuôi)
+                    '&::after': {
+                      content: "''",
+                      position: 'absolute',
+                      right: '-9px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      borderTop: '7.5px solid transparent',
+                      borderBottom: '7.5px solid transparent',
+                      borderLeft: `10px solid ${bubbleBg}`,
+                      zIndex: -10
+                    }
+                  }}
+                >
+                  {/* highlight mềm phía trên thân bubble */}
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    borderRadius="inherit"
+                    background={bubbleSheen}
+                    pointerEvents="none"
+                  />
+                  <Text fontSize="13.5px" lineHeight="1.35" fontWeight="semibold" color={bubbleText} userSelect="none">
+                    {bubble}
+                  </Text>
+                </Box>
               </motion.div>
             )}
           </AnimatePresence>
