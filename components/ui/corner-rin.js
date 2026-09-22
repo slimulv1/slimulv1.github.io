@@ -59,9 +59,15 @@ const pool = slot => [
  * Ngoài ra lắng nghe sự kiện hover (CustomEvent rin:peek / rin:clear) từ Projects,
  * vùng Discord và các link "On the web": hover/chạm → bubble hiện nội dung đó (「...」),
  * rời chuột / vuốt → ẩn ngay.
+ *
+ * Lắng nghe "rin:lang" (provider giao diện xoay vòng 10s): hiện tên ngôn ngữ
+ * viết bằng chính ngôn ngữ đó trên đầu Rin, giống tooltip "Say hi".
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)
+  // Thông báo tên ngôn ngữ trên đầu Rin khi giao diện xoay vòng (sự kiện rin:lang)
+  const [langNote, setLangNote] = useState(null)
+  const langTimer = useRef(null)
   // Render-reactive (không phải ref): idle-float/entrance/sparkle quyết định theo
   // prefers-reduced-motion ngay ở render, không bị chờ mount.
   const [reduced] = useState(
@@ -165,6 +171,24 @@ const CornerRin = () => {
       window.removeEventListener('rin:peek', onPeek)
       window.removeEventListener('rin:clear', onClear)
       clearTimeout(bubbleTimer.current)
+    }
+  }, [])
+
+  // Giao diện xoay ngôn ngữ (provider bắn "rin:lang"): hiện tên ngôn ngữ
+  // (viết bằng chính ngôn ngữ đó) trên đầu Rin, giống tooltip "Say hi",
+  // tự ẩn sau ~2.2s — không đụng bubble chào/phía bên của Rin.
+  useEffect(() => {
+    const onLang = e => {
+      const name = e && e.detail
+      if (!name) return
+      setLangNote(name)
+      clearTimeout(langTimer.current)
+      langTimer.current = setTimeout(() => setLangNote(null), 2200)
+    }
+    window.addEventListener('rin:lang', onLang)
+    return () => {
+      window.removeEventListener('rin:lang', onLang)
+      clearTimeout(langTimer.current)
     }
   }, [])
 
@@ -404,6 +428,64 @@ const CornerRin = () => {
                       {bubble}
                     </motion.span>
                   </Text>
+                </Box>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Thông báo ngôn ngữ khi giao diện xoay vòng — nằm trên đầu Rin,
+              style giống tooltip "Say hi" (bubble nhỏ + mũi chĩa xuống Rin) */}
+          <AnimatePresence>
+            {langNote && (
+              <motion.div
+                key="rin-lang-note"
+                initial={{ opacity: 0, x: '-50%', y: 10, scale: 0.85 }}
+                animate={{ opacity: 1, x: '-50%', y: 0, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  x: '-50%',
+                  y: 6,
+                  scale: 0.9,
+                  transition: { duration: 0.18, ease: 'easeOut' }
+                }}
+                transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                style={{
+                  position: 'absolute',
+                  bottom: 'calc(100% + 10px)',
+                  left: '50%',
+                  transformOrigin: 'bottom center',
+                  pointerEvents: 'none',
+                  zIndex: 33,
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <Box
+                  position="relative"
+                  px={3}
+                  py={1.5}
+                  borderRadius={10}
+                  bg={bubbleBg}
+                  color={bubbleText}
+                  border="1.5px solid"
+                  borderColor={bubbleBorder}
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 4px 12px rgba(0,0,0,0.25)"
+                  fontSize="12px"
+                  fontWeight={700}
+                  textShadow="0 1px 0 rgba(255,255,255,0.25)"
+                  css={{
+                    // mũi nhọn chĩa xuống đầu Rin
+                    '&::after': {
+                      content: "''",
+                      position: 'absolute',
+                      top: '100%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      border: '6px solid transparent',
+                      borderTopColor: bubbleBg
+                    }
+                  }}
+                >
+                  {langNote}
                 </Box>
               </motion.div>
             )}
