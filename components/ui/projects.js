@@ -4,6 +4,8 @@ import { motion } from 'framer-motion'
 import { IoStar, IoArrowForward } from 'react-icons/io5'
 // Snapshot thủ công — chỉ dùng làm fallback khi GitHub không có dữ liệu (xem lib/github-data.js)
 import pinnedRepos from '../../lib/pinned-repos.json'
+// Live: tự quét phần pin trên profile github không cần token/rebuild (xem lib/live-pinned.js)
+import { fetchLivePinned } from '../../lib/live-pinned'
 
 const mono =
   "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace"
@@ -48,10 +50,12 @@ const ProjectCard = ({ repo }) => {
   const arrowColor = useColorModeValue('gray.700', 'whiteAlpha.700')
   // hover ring hiển thị rõ ở cả 2 mode
   const hoverBorder = useColorModeValue('#2b6f6a', 'grassTeal')
-  // "push X trước" tính client-side để không bị đóng băng lúc build
+  // "push X trước" tính client-side để không bị đóng băng lúc build.
+  // Live data (quét profile) không có pushedAt → không hiện dòng này.
   const [pushedLabel, setPushedLabel] = useState(null)
   useEffect(() => {
-    setPushedLabel(timeAgo(repo.pushedAt))
+    if (repo.pushedAt) setPushedLabel(timeAgo(repo.pushedAt))
+    else setPushedLabel(null)
   }, [repo.pushedAt])
 
   return (
@@ -155,6 +159,19 @@ const ProjectCard = ({ repo }) => {
 }
 
 const Projects = ({ repos = pinnedRepos }) => {
+  // Dữ liệu build (getStaticProps) giữ làm khung SSR/không-JS —
+  // rồi lặng lẽ thay bằng dữ liệu pin mới nhất ngay khi load trang.
+  const [list, setList] = useState(repos)
+  useEffect(() => {
+    let alive = true
+    fetchLivePinned().then(live => {
+      if (alive && live && live.length) setList(live)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
   return (
     <motion.div
       variants={listVariants}
@@ -163,7 +180,7 @@ const Projects = ({ repos = pinnedRepos }) => {
       viewport={{ once: true, margin: '-40px' }}
     >
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-        {repos.map(repo => (
+        {list.map(repo => (
           <ProjectCard key={repo.name} repo={repo} />
         ))}
       </SimpleGrid>
