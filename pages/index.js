@@ -60,7 +60,7 @@ const Home = () => (
           I ♥
         </Heading>
         <Paragraph>
-          Art, Music, đọc tiểu thuyết, Dựng các mô hình 3D, tìm hiểu về AI
+          Just go ahead and marry your bed△
         </Paragraph>
       </Section>
 
