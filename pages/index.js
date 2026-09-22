@@ -28,7 +28,7 @@ const Home = () => (
           <Heading as="h2" variant="page-title">
             Slimu Neet
           </Heading>
-          <p>Just a regular person with hobbies and a passion for technology.</p>
+          <p>Just a plain human with hobbies and a passion for linux &amp; open source.</p>
         </Box>
         <Box
           flexShrink={0}
