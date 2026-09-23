@@ -34,6 +34,8 @@ const EnterOverlay = () => {
   const { lang } = useInterfaceLang()
   // prefers-reduced-motion: tắt mọi nhấp nháy/trôi lặp vô hạn, giữ giao diện tĩnh
   const reduced = useReducedMotion()
+  // Bối cảnh: dark = đêm trại (sao nhấp nháy); sáng = ban ngày (hạt nắng tĩnh)
+  const isDark = useColorModeValue(false, true)
 
   const veil = useColorModeValue(
     'rgba(247, 239, 220, 0.8)',
@@ -86,23 +88,30 @@ const EnterOverlay = () => {
             cursor: 'pointer'
           }}
         >
-          {/* Chòm sao nhấp nháy — tĩnh khi prefers-reduced-motion */}
-          {STARS.map((s, i) => (
+          {/* Bầu trời phía sau: dark = 10 ngôi sao nhấp nháy (đêm trại);
+              sáng = 4 hạt nắng dịu TĨNH (không có sao ban ngày) */}
+          {(isDark ? STARS : STARS.slice(0, 4)).map((s, i) => (
             <motion.span
               key={i}
               aria-hidden="true"
               animate={
-                reduced ? { opacity: 0.55 } : { opacity: [0.15, 0.9, 0.15] }
+                isDark
+                  ? reduced
+                    ? { opacity: 0.55 }
+                    : { opacity: [0.15, 0.9, 0.15] }
+                  : { opacity: 0.4 }
               }
               transition={
-                reduced
-                  ? { duration: 0 }
-                  : {
-                      repeat: Infinity,
-                      duration: 2.6,
-                      delay: s.delay,
-                      ease: 'easeInOut'
-                    }
+                isDark
+                  ? reduced
+                    ? { duration: 0 }
+                    : {
+                        repeat: Infinity,
+                        duration: 2.6,
+                        delay: s.delay,
+                        ease: 'easeInOut'
+                      }
+                  : { duration: 0 }
               }
               style={{
                 position: 'absolute',
@@ -111,13 +120,17 @@ const EnterOverlay = () => {
                 width: s.size,
                 height: s.size,
                 borderRadius: '50%',
-                background: 'var(--chakra-colors-camp-ember)',
-                boxShadow: '0 0 6px var(--chakra-colors-camp-ember)'
+                background: isDark
+                  ? 'var(--chakra-colors-camp-ember)'
+                  : 'rgba(255, 205, 130, 0.55)',
+                boxShadow: isDark
+                  ? '0 0 6px var(--chakra-colors-camp-ember)'
+                  : '0 0 6px rgba(255, 205, 130, 0.4)'
               }}
             />
           ))}
 
-          {/* Ánh lửa trại sau lều △ */}
+          {/* Ánh sáng sau lều △ — dark: ánh lửa trại; sáng: làn nắng ban mai */}
           <Box
             position="absolute"
             left="50%"
@@ -127,8 +140,9 @@ const EnterOverlay = () => {
             transform="translate(-50%, -58%)"
             borderRadius="full"
             css={{
-              background:
-                'radial-gradient(closest-side, rgba(221,138,46,0.16), rgba(221,138,46,0.05) 55%, transparent 75%)'
+              background: isDark
+                ? 'radial-gradient(closest-side, rgba(221,138,46,0.16), rgba(221,138,46,0.05) 55%, transparent 75%)'
+                : 'radial-gradient(closest-side, rgba(255,222,150,0.16), rgba(255,222,150,0.05) 55%, transparent 75%)'
             }}
             aria-hidden="true"
           />

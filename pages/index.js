@@ -92,6 +92,8 @@ const Home = ({ github }) => {
   // Ngôn ngữ theo vòng xoay chung của giao diện (10s): Anh → Nhật
   const { lang } = useInterfaceLang()
   const reduced = useReducedMotion()
+  // Đom đóm là họa tiết đêm → chỉ chạy ở theme tối (ban đêm), bỏ ở sáng
+  const isDark = useColorModeValue(false, true)
   return (
     <Layout>
       <Container>
@@ -227,8 +229,10 @@ const Home = ({ github }) => {
                   'repeating-linear-gradient(45deg, rgba(221,138,46,0.30) 0 7px, rgba(255,255,255,0.55) 7px 14px)'
               }}
             />
-            {/* Đom đóm quanh ghi chú — chỉ khi không giảm chuyển động */}
+            {/* Đom đóm quanh ghi chú — chỉ khi không giảm chuyển động VÀ đang
+                ở theme tối (ban đêm); ban ngày thì bỏ, không phải họa tiết "ngày" */}
             {!reduced &&
+              isDark &&
               FIREFLIES.map((f, i) => (
                 <motion.span
                   key={i}
