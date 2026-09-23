@@ -1,5 +1,5 @@
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   useDiscordPresence,
   DISCORD_USER_ID
@@ -68,6 +68,160 @@ export const DiscordDot = ({ color, pulse = false, size = 10 }) => {
   )
 }
 
+/**
+ * CampScene — "góc bãi trại ngay bây giờ": icon SVG 22px phản ánh trạng thái
+ * Discord qua motif Yuru Camp△ (giữ màu dot chuẩn Discord riêng bên cạnh):
+ *   online  → lửa trại + than hồng bốc lên (béng lửa chập chờn)
+ *   idle    → lều + đèn lồng ấm (ánh sáng hít thở chậm)
+ *   dnd     → ấm trà đang sôi + hơi nước ("đang bận — trà đang ủ")
+ *   offline → lều tối + trăng lưỡi liềm (đang ngủ — giữ im lặng)
+ * Thuần trang trí (aria-hidden, không text) + transform/opacity only + tôn
+ * trọng prefers-reduced-motion → không ảnh hưởng bất biến hình học en≡ja.
+ */
+const CampScene = ({ status }) => {
+  const reduced = useReducedMotion()
+  const ember = useColorModeValue('#dd8a2e', '#f2a541')
+  const emberHot = useColorModeValue('#f5a93f', '#ffcf6b')
+  const ink = useColorModeValue('#4b3f31', '#ece8dd')
+  const teal = useColorModeValue('#188f7f', '#73daca')
+  const grey = '#9b9ba5'
+
+  const still = { duration: 0 }
+  const base = {
+    width: 22,
+    height: 22,
+    display: 'block',
+    pointerEvents: 'none'
+  }
+
+  if (status === 'online') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={base}>
+        <motion.g
+          animate={reduced ? { opacity: 1 } : { opacity: [1, 0.74, 1] }}
+          transition={
+            reduced
+              ? still
+              : { repeat: Infinity, duration: 2.3, ease: 'easeInOut' }
+          }
+        >
+          <circle cx="12" cy="13.6" r="6.6" fill={ember} opacity="0.14" />
+          <path
+            d="M12 3.2 C13.9 6.3 15.8 8.6 15.8 11.9 A3.8 3.8 0 0 1 8.2 11.9 C8.2 8.6 10.1 6.3 12 3.2 Z"
+            fill={ember}
+          />
+          <path
+            d="M12 9 C12.9 10.4 13.8 11.3 13.8 12.8 A1.8 1.8 0 0 1 10.2 12.8 C10.2 11.3 11.1 10.4 12 9 Z"
+            fill={emberHot}
+          />
+        </motion.g>
+        <motion.circle
+          cx="9.4"
+          cy="7.4"
+          r="1.1"
+          fill={emberHot}
+          animate={reduced ? { opacity: 0.85 } : { opacity: [0, 0.95, 0] }}
+          transition={
+            reduced
+              ? still
+              : { repeat: Infinity, duration: 1.9, delay: 0.7, ease: 'easeOut' }
+          }
+        />
+        <path d="M6.8 17.6 L17.2 15.4" stroke={ink} strokeWidth="1.8" strokeLinecap="round" opacity="0.5" />
+        <path d="M6.8 15.4 L17.2 17.6" stroke={ink} strokeWidth="1.8" strokeLinecap="round" opacity="0.5" />
+      </svg>
+    )
+  }
+
+  if (status === 'idle') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={base}>
+        <path
+          d="M5 15.4 L12 6.6 L19 15.4 Z"
+          fill="none"
+          stroke={ink}
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+          opacity="0.85"
+        />
+        <path d="M12 6.6 L12 15.4" stroke={ink} strokeWidth="1.6" strokeLinecap="round" opacity="0.45" />
+        <motion.circle
+          cx="12"
+          cy="15"
+          r="2.5"
+          fill={ember}
+          animate={reduced ? { opacity: 0.7 } : { opacity: [0.45, 0.95, 0.45] }}
+          transition={
+            reduced
+              ? still
+              : { repeat: Infinity, duration: 3, ease: 'easeInOut' }
+          }
+        />
+      </svg>
+    )
+  }
+
+  if (status === 'dnd') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={base}>
+        <g
+          fill="none"
+          stroke={teal}
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          opacity="0.85"
+        >
+          <motion.path
+            d="M9.2 7.4 q1.1 -1.5 0 -2.8"
+            animate={reduced ? { opacity: 0.75 } : { opacity: [0, 0.9, 0] }}
+            transition={
+              reduced
+                ? still
+                : { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }
+            }
+          />
+          <motion.path
+            d="M12.6 8.4 q1.1 -1.5 0 -2.9"
+            animate={reduced ? { opacity: 0.75 } : { opacity: [0, 0.9, 0] }}
+            transition={
+              reduced
+                ? still
+                : {
+                    repeat: Infinity,
+                    duration: 2.4,
+                    delay: 1.15,
+                    ease: 'easeInOut'
+                  }
+            }
+          />
+          <path d="M8.6 15.6 A3.4 3.4 0 0 1 15.4 15.6 Z" fill={teal} opacity="0.9" />
+          <path d="M15.4 13.7 L17.9 12.2" />
+          <path d="M12.4 12.6 V11.6 a1.3 1.3 0 0 1 2.6 0" />
+        </g>
+      </svg>
+    )
+  }
+
+  // offline
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={base}>
+      <path
+        d="M14.6 6.2 A5.6 5.6 0 1 0 17.8 14.4 A4.3 4.3 0 0 1 14.6 6.2 Z"
+        fill={grey}
+      />
+      <circle cx="7" cy="7.8" r="1" fill={grey} opacity="0.75" />
+      <path
+        d="M8.6 16.4 L12.2 11.8 L15.8 16.4 Z"
+        fill="none"
+        stroke={ink}
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+        opacity="0.4"
+      />
+    </svg>
+  )
+}
+
 const getActivityText = (presence, lang) => {
   if (!presence) return null
 
@@ -97,6 +251,7 @@ const getActivityText = (presence, lang) => {
 }
 
 const StatusBar = () => {
+  const reduced = useReducedMotion()
   const presence = useDiscordPresence(DISCORD_USER_ID)
   // Token camp.*: bề mặt giấy card, chữ mờ, pill phụ — thay cho hex rải rác.
   const bg = 'camp.card'
@@ -108,29 +263,126 @@ const StatusBar = () => {
     'inset 0 1px 0 rgba(255,255,255,0.65), 0 16px 32px -20px rgba(120,90,40,0.42), 0 4px 10px -6px rgba(120,90,40,0.18)',
     'inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 32px -20px rgba(0,0,0,0.6), 0 4px 10px -6px rgba(0,0,0,0.35)'
   )
+  // Bóng hover "nhấc sticker lên" — chỉ transform/opacity, gated reduced-motion
+  const hoverShadow = useColorModeValue(
+    'inset 0 1px 0 rgba(255,255,255,0.7), 0 24px 46px -22px rgba(120,90,40,0.5), 0 6px 14px -6px rgba(120,90,40,0.24)',
+    'inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 46px -22px rgba(0,0,0,0.65), 0 6px 14px -6px rgba(0,0,0,0.4)'
+  )
+  // Dải băng dính scrapbook góc card (nét quen thuộc của artbook Yuru Camp△)
+  const tapeColor = useColorModeValue('rgba(24,143,127,0.20)', 'rgba(115,218,202,0.12)')
+  const tapeEdge = useColorModeValue('rgba(24,143,127,0.10)', 'rgba(115,218,202,0.06)')
   // Ngôn ngữ theo vòng quay chung của giao diện (10s): Anh ↔ Nhật
   const { lang } = useInterfaceLang()
 
-  if (!presence) {
-    return (
-      <Box
-        borderRadius="card"
-        mb={6}
-        p={4}
-        textAlign="center"
-        bg={bg}
-        border="1.5px solid"
-        borderColor={pillBorder}
-        boxShadow={cardShadow}
-        css={{ backdropFilter: 'blur(10px)' }}
-      >
-        <Text fontSize="sm" opacity={0.8}>
-          {UI.connecting[lang]}
-        </Text>
-      </Box>
-    )
+  // Điểm chung của cả 2 khung (connecting / đã nạp): nền giấy + bóng clay
+  const sheet = {
+    borderRadius: 'card',
+    px: 4,
+    py: 4,
+    bg,
+    border: '1.5px solid',
+    borderColor: pillBorder,
+    boxShadow: cardShadow,
+    position: 'relative',
+    css: {
+      backdropFilter: 'blur(10px)',
+      transition: 'transform 0.22s ease, box-shadow 0.28s ease'
+    }
   }
 
+  // Dải băng dính — hoàn toàn trang trí, không chiếm layout
+  const tape = (
+    <Box
+      position="absolute"
+      top="-8px"
+      left="20px"
+      w="46px"
+      h="13px"
+      borderRadius="2px"
+      transform="rotate(-4deg)"
+      bg={tapeColor}
+      boxShadow="0 1px 2px rgba(0,0,0,0.10)"
+      pointerEvents="none"
+      aria-hidden="true"
+      zIndex={1}
+      css={{
+        backgroundImage: `linear-gradient(90deg, transparent 0%, ${tapeEdge} 28%, transparent 100%)`
+      }}
+    />
+  )
+
+  // Khuôn ra-vào của từng "màn" (connecting ↔ card): opacity+y, không layout
+  const enter = reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }
+  const leave = reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: -4 }
+  const fade = { duration: 0.22, ease: 'easeOut' }
+
+  return (
+    <AnimatePresence mode="wait">
+      {!presence ? (
+        <motion.div key="connecting" initial={enter} animate={{ opacity: 1, y: 0 }} exit={leave} transition={fade}>
+          <Box {...sheet} mb={6} textAlign="center" _hover={reduced ? undefined : { transform: 'translateY(-2px)', boxShadow: hoverShadow }}>
+            {tape}
+            <Flex alignItems="center" justifyContent="center" columnGap={2}>
+              {/* Lều bé "đang dựng" — spring một lần, không lặp */}
+              <motion.svg
+                initial={reduced ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 240, damping: 15 }}
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+                style={{ flexShrink: 0 }}
+              >
+                <path
+                  d="M4.5 15.6 L12 6.4 L19.5 15.6 Z"
+                  fill="none"
+                  stroke="var(--chakra-colors-camp-ember, #dd8a2e)"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                  opacity="0.9"
+                />
+                <path d="M12 6.4 L12 15.6" stroke="var(--chakra-colors-camp-ember, #dd8a2e)" strokeWidth="1.6" strokeLinecap="round" opacity="0.5" />
+              </motion.svg>
+              <Text fontSize="sm" opacity={0.8}>
+                {UI.connecting[lang]}
+              </Text>
+            </Flex>
+          </Box>
+        </motion.div>
+      ) : (
+        <motion.div key="card" initial={enter} animate={{ opacity: 1, y: 0 }} exit={leave} transition={fade}>
+          <StatusPresent
+            presence={presence}
+            lang={lang}
+            sheet={sheet}
+            tape={tape}
+            hoverShadow={hoverShadow}
+            reduced={reduced}
+            muted={muted}
+            pillBg={pillBg}
+            pillBorder={pillBorder}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// Card đã nạp presence — tách riêng để StatusBar gọn; status thay đổi real-time
+// (lên/xuống líne) làm nhấp nháy ring + viền qua CSS transition 0.4s.
+const StatusPresent = ({
+  presence,
+  lang,
+  sheet,
+  tape,
+  hoverShadow,
+  reduced,
+  muted,
+  pillBg,
+  pillBorder
+}) => {
   const status = STATUS[presence.discord_status] || STATUS.offline
   const avatarColor =
     AVATAR_COLOR[presence.discord_status] || AVATAR_COLOR.offline
@@ -147,14 +399,9 @@ const StatusBar = () => {
 
   return (
     <Box
-      borderRadius="card"
+      {...sheet}
       mb={6}
-      p={4}
-      bg={bg}
-      border="1.5px solid"
-      borderColor="camp.line"
-      boxShadow={cardShadow}
-      css={{ backdropFilter: 'blur(10px)' }}
+      _hover={reduced ? undefined : { transform: 'translateY(-2px)', boxShadow: hoverShadow }}
       // Hover/touch → Rin hiện bubble 「@username」 (giống card project).
       onMouseEnter={() => rinPeek(subName || name)}
       onMouseLeave={rinClear}
@@ -162,6 +409,7 @@ const StatusBar = () => {
       onTouchMove={rinClear}
       onTouchCancel={rinClear}
     >
+      {tape}
       <Flex
         alignItems="center"
         justifyContent="space-between"
@@ -185,6 +433,10 @@ const StatusBar = () => {
               boxShadow={`0 0 0 3px ${avatarColor}26, 0 0 18px ${avatarColor}33`}
               objectFit="cover"
               flexShrink={0}
+              // Status đổi real-time → màu nhẫn + quầng trượt mượt 0.4s
+              css={{
+                transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
+              }}
             />
           ) : (
             <Box
@@ -196,6 +448,9 @@ const StatusBar = () => {
               boxShadow={`0 0 0 3px ${avatarColor}26`}
               bg="camp.tealSoft"
               flexShrink={0}
+              css={{
+                transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
+              }}
             />
           )}
           <Box lineHeight="1.15">
@@ -276,51 +531,90 @@ const StatusBar = () => {
           columnGap={3}
           flexWrap="wrap"
         >
-          <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap" color="camp.text">
-            <DiscordDot color={status.color} pulse={online} />
-            {/* key=label → đổi ngôn ngữ theo vòng quay 10s, remount span chạy micro-fade 0.25s mượt */}
-            <motion.span
-              key={status.labels[lang]}
-              initial={{ opacity: 0, y: 2 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              style={{ display: 'inline-block' }}
-            >
-              {status.labels[lang]}
-            </motion.span>
-          </Text>
-          {activity ? (
-            <Flex alignItems="center" columnGap={2}>
-              {activity.art ? (
-                <Box
-                  as="img"
-                  src={activity.art}
-                  alt="Album art"
-                  w="40px"
-                  h="40px"
-                  borderRadius="12px"
-                  border="1px solid"
-                  borderColor="camp.line"
-                  objectFit="cover"
-                  flexShrink={0}
-                />
-              ) : null}
-              <Box textAlign="left" lineHeight="1.15">
-                <Text fontSize={{ base: 'xs', sm: 'sm' }} fontWeight="medium" color="camp.text">
-                  {activity.icon} {activity.text}
-                </Text>
-                {activity.sub ? (
-                  <Text fontSize="xs" color={muted}>
-                    {activity.sub}
-                  </Text>
-                ) : null}
-              </Box>
-            </Flex>
-          ) : (
-            <Text fontSize="xs" color={muted}>
-              {online ? UI.readyToChat[lang] : UI.takingRest[lang]}
+          <Flex alignItems="center" columnGap={2} whiteSpace="nowrap">
+            {/* "Góc bãi trại" — scene crossfade trong khung 22px cố định
+                (absolute → không đổi layout khi đổi status) */}
+            <Box as="span" position="relative" display="inline-flex" w="22px" h="22px" flexShrink={0} aria-hidden="true">
+              <AnimatePresence mode="sync" initial={false}>
+                <motion.span
+                  key={presence.discord_status || 'offline'}
+                  style={{ position: 'absolute', inset: 0 }}
+                  initial={reduced ? { opacity: 1 } : { opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reduced ? { opacity: 1 } : { opacity: 0 }}
+                  transition={reduced ? { duration: 0 } : { duration: 0.18, ease: 'easeOut' }}
+                >
+                  <CampScene status={presence.discord_status || 'offline'} />
+                </motion.span>
+              </AnimatePresence>
+            </Box>
+            <Text fontSize="sm" fontWeight="medium" color="camp.text">
+              <DiscordDot color={status.color} pulse={online} />
+              {/* key=label → đổi ngôn ngữ theo vòng quay 10s, remount span chạy micro-fade 0.25s mượt */}
+              <motion.span
+                key={status.labels[lang]}
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                style={{ display: 'inline-block' }}
+              >
+                {status.labels[lang]}
+              </motion.span>
             </Text>
-          )}
+          </Flex>
+          {/* Activity/nghỉ ngơi — crossfade khi đổi bài hát/game/trạng thái */}
+          <AnimatePresence mode="wait" initial={false}>
+            {activity ? (
+              <Flex
+                key={activity.text}
+                as={motion.div}
+                alignItems="center"
+                columnGap={2}
+                initial={reduced ? { opacity: 1 } : { opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduced ? { opacity: 1 } : { opacity: 0, y: -3 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                {activity.art ? (
+                  <Box
+                    as="img"
+                    src={activity.art}
+                    alt="Album art"
+                    w="40px"
+                    h="40px"
+                    borderRadius="12px"
+                    border="1px solid"
+                    borderColor="camp.line"
+                    objectFit="cover"
+                    flexShrink={0}
+                  />
+                ) : null}
+                <Box textAlign="left" lineHeight="1.15">
+                  <Text fontSize={{ base: 'xs', sm: 'sm' }} fontWeight="medium" color="camp.text">
+                    {activity.icon} {activity.text}
+                  </Text>
+                  {activity.sub ? (
+                    <Text fontSize="xs" color={muted}>
+                      {activity.sub}
+                    </Text>
+                  ) : null}
+                </Box>
+              </Flex>
+            ) : (
+              <Text
+                key="rest"
+                as={motion.p}
+                fontSize="xs"
+                color={muted}
+                initial={reduced ? { opacity: 1 } : { opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduced ? { opacity: 1 } : { opacity: 0, y: -3 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                {online ? UI.readyToChat[lang] : UI.takingRest[lang]}
+              </Text>
+            )}
+          </AnimatePresence>
         </Flex>
       </Flex>
     </Box>
