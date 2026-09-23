@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useInterfaceLang } from '../../lib/interface-lang'
 import { UI } from '../../lib/interface-labels'
 
@@ -32,6 +32,8 @@ const EnterOverlay = () => {
   const [entered, setEntered] = useState(false)
   // Text "bấm để vào" theo vòng quay ngôn ngữ giao diện (10s)
   const { lang } = useInterfaceLang()
+  // prefers-reduced-motion: tắt mọi nhấp nháy/trôi lặp vô hạn, giữ giao diện tĩnh
+  const reduced = useReducedMotion()
 
   const veil = useColorModeValue(
     'rgba(247, 239, 220, 0.8)',
@@ -84,18 +86,24 @@ const EnterOverlay = () => {
             cursor: 'pointer'
           }}
         >
-          {/* Chòm sao nhấp nháy */}
+          {/* Chòm sao nhấp nháy — tĩnh khi prefers-reduced-motion */}
           {STARS.map((s, i) => (
             <motion.span
               key={i}
               aria-hidden="true"
-              animate={{ opacity: [0.15, 0.9, 0.15] }}
-              transition={{
-                repeat: Infinity,
-                duration: 2.6,
-                delay: s.delay,
-                ease: 'easeInOut'
-              }}
+              animate={
+                reduced ? { opacity: 0.55 } : { opacity: [0.15, 0.9, 0.15] }
+              }
+              transition={
+                reduced
+                  ? { duration: 0 }
+                  : {
+                      repeat: Infinity,
+                      duration: 2.6,
+                      delay: s.delay,
+                      ease: 'easeInOut'
+                    }
+              }
               style={{
                 position: 'absolute',
                 left: s.left,
@@ -132,10 +140,14 @@ const EnterOverlay = () => {
             gap={4}
             position="relative"
           >
-            {/* △ nổi — motif Yuru Camp của trang */}
+            {/* △ nổi — motif Yuru Camp của trang (tĩnh khi reduced-motion) */}
             <motion.span
-              animate={{ y: [0, -8, 0] }}
-              transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+              animate={reduced ? { y: 0 } : { y: [0, -8, 0] }}
+              transition={
+                reduced
+                  ? { duration: 0 }
+                  : { repeat: Infinity, duration: 3, ease: 'easeInOut' }
+              }
               style={{
                 color: 'var(--chakra-colors-camp-ember)',
                 fontSize: 34,
@@ -178,8 +190,12 @@ const EnterOverlay = () => {
                   {UI.clickToEnter[lang]}
                 </Text>
                 <motion.span
-                  animate={{ opacity: [1, 0, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.1 }}
+                  animate={reduced ? { opacity: 1 } : { opacity: [1, 0, 1] }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : { repeat: Infinity, duration: 1.1 }
+                  }
                   style={{ color: 'var(--chakra-colors-camp-ember)', fontFamily: mono, fontSize: 18 }}
                   aria-hidden="true"
                 >

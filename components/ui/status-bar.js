@@ -1,5 +1,5 @@
 import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   useDiscordPresence,
   DISCORD_USER_ID
@@ -40,27 +40,33 @@ const AVATAR_COLOR = {
   offline: '#747F8D'
 }
 
-export const DiscordDot = ({ color, pulse = false, size = 10 }) => (
-  <motion.span
-    animate={pulse ? { scale: [1, 1.4, 1] } : { scale: 1 }}
-    transition={
-      pulse
-        ? { repeat: Infinity, duration: 2, ease: 'easeInOut' }
-        : { duration: 0.2 }
-    }
-    style={{
-      display: 'inline-block',
-      width: size,
-      height: size,
-      borderRadius: '50%',
-      background: color,
-      boxShadow: `0 0 8px ${color}`,
-      marginRight: 6,
-      flexShrink: 0,
-      verticalAlign: 'middle'
-    }}
-  />
-)
+// Nhịp pulse "đang online" — giữ animation vô hạn chỉ khi người dùng
+// không yêu cầu prefers-reduced-motion (nếu reduce: tĩnh, dot vẫn hiển thị).
+export const DiscordDot = ({ color, pulse = false, size = 10 }) => {
+  const reduced = useReducedMotion()
+  const active = pulse && !reduced
+  return (
+    <motion.span
+      animate={active ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+      transition={
+        active
+          ? { repeat: Infinity, duration: 2, ease: 'easeInOut' }
+          : { duration: 0.2 }
+      }
+      style={{
+        display: 'inline-block',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: color,
+        boxShadow: `0 0 8px ${color}`,
+        marginRight: 6,
+        flexShrink: 0,
+        verticalAlign: 'middle'
+      }}
+    />
+  )
+}
 
 const getActivityText = (presence, lang) => {
   if (!presence) return null

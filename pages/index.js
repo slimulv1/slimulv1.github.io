@@ -126,8 +126,12 @@ const Home = ({ github }) => {
               lineHeight={1}
             >
               <motion.span
-                animate={{ y: [0, -5, 0] }}
-                transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+                animate={reduced ? { y: 0 } : { y: [0, -5, 0] }}
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }
+                }
                 style={{ display: 'inline-block' }}
               >
                 △

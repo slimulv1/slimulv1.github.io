@@ -68,7 +68,11 @@ const VoxelDog = () => {
       scene.add(ambientLight)
 
       const controls = new OrbitControls(camera, renderer.domElement)
-      controls.autoRotate = true
+      // prefers-reduced-motion: tắt tự xoay lặp vô hạn (autoRotate)
+      const prefersReduced =
+        !!window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      controls.autoRotate = !prefersReduced
       controls.target = target
 
       loadGLTFModel(scene, urlDogGLB, {
@@ -88,7 +92,9 @@ const VoxelDog = () => {
 
         frame = frame <= 100 ? frame + 1 : frame
 
-        if (frame <= 100) {
+        // Phase giới thiệu "bay vòng quanh chú chó" — bỏ khi reduced-motion
+        // (dừng ngay ở góc camera ban đầu, không tự xoay).
+        if (frame <= 100 && !prefersReduced) {
           const p = initialCameraPosition
           const rotSpeed = -easeOutCirc(frame / 120) * Math.PI * 20
 
