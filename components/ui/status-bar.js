@@ -92,21 +92,30 @@ const getActivityText = (presence, lang) => {
 
 const StatusBar = () => {
   const presence = useDiscordPresence(DISCORD_USER_ID)
-  const bg = useColorModeValue('whiteAlpha.500', 'whiteAlpha.200')
-  const muted = useColorModeValue('gray.600', 'whiteAlpha.700')
-  const pillBg = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
-  const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
+  // Token camp.*: bề mặt giấy card, chữ mờ, pill phụ — thay cho hex rải rác.
+  const bg = 'camp.card'
+  const muted = 'camp.muted'
+  const pillBg = 'camp.cardAlt'
+  const pillBorder = 'camp.line'
+  // Bóng clay hai lớp: highlight mép trên + đổ bóng mềm xuống dưới
+  const cardShadow = useColorModeValue(
+    'inset 0 1px 0 rgba(255,255,255,0.65), 0 16px 32px -20px rgba(120,90,40,0.42), 0 4px 10px -6px rgba(120,90,40,0.18)',
+    'inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 32px -20px rgba(0,0,0,0.6), 0 4px 10px -6px rgba(0,0,0,0.35)'
+  )
   // Ngôn ngữ theo vòng quay chung của giao diện (10s): Anh ↔ Nhật
   const { lang } = useInterfaceLang()
 
   if (!presence) {
     return (
       <Box
-        borderRadius="lg"
+        borderRadius="card"
         mb={6}
-        p={3}
+        p={4}
         textAlign="center"
         bg={bg}
+        border="1.5px solid"
+        borderColor={pillBorder}
+        boxShadow={cardShadow}
         css={{ backdropFilter: 'blur(10px)' }}
       >
         <Text fontSize="sm" opacity={0.8}>
@@ -132,10 +141,13 @@ const StatusBar = () => {
 
   return (
     <Box
-      borderRadius="lg"
+      borderRadius="card"
       mb={6}
-      p={3}
+      p={4}
       bg={bg}
+      border="1.5px solid"
+      borderColor="camp.line"
+      boxShadow={cardShadow}
       css={{ backdropFilter: 'blur(10px)' }}
       // Hover/touch → Rin hiện bubble 「@username」 (giống card project).
       onMouseEnter={() => rinPeek(subName || name)}
@@ -159,22 +171,24 @@ const StatusBar = () => {
               as="img"
               src={avatar}
               alt="Discord avatar"
-              w="48px"
-              h="48px"
+              w="52px"
+              h="52px"
               borderRadius="full"
-              border="2px solid"
+              border="3px solid"
               borderColor={avatarColor}
+              boxShadow={`0 0 0 3px ${avatarColor}26, 0 0 18px ${avatarColor}33`}
               objectFit="cover"
               flexShrink={0}
             />
           ) : (
             <Box
-              w="48px"
-              h="48px"
+              w="52px"
+              h="52px"
               borderRadius="full"
-              border="2px solid"
+              border="3px solid"
               borderColor={avatarColor}
-              bg="whiteAlpha.200"
+              boxShadow={`0 0 0 3px ${avatarColor}26`}
+              bg="camp.tealSoft"
               flexShrink={0}
             />
           )}
@@ -185,7 +199,7 @@ const StatusBar = () => {
               flexWrap="wrap"
               justifyContent={{ base: 'center', sm: 'flex-start' }}
             >
-              <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }}>
+              <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }} color="camp.text">
                 {name}
               </Text>
               <DiscordBadges publicFlags={user.public_flags} />
@@ -222,7 +236,7 @@ const StatusBar = () => {
               ) : null}
             </Flex>
             {subName ? (
-              <Text fontSize="xs" opacity={0.7}>
+              <Text fontSize="xs" opacity={0.75} color="camp.muted">
                 {subName}
               </Text>
             ) : null}
@@ -237,7 +251,7 @@ const StatusBar = () => {
           columnGap={3}
           flexWrap="wrap"
         >
-          <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap">
+          <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap" color="camp.text">
             <DiscordDot color={status.color} pulse={online} />
             {/* key=label → đổi ngôn ngữ theo vòng quay 10s, remount span chạy micro-fade 0.25s mượt */}
             <motion.span
@@ -259,13 +273,15 @@ const StatusBar = () => {
                   alt="Album art"
                   w="40px"
                   h="40px"
-                  borderRadius="md"
+                  borderRadius="12px"
+                  border="1px solid"
+                  borderColor="camp.line"
                   objectFit="cover"
                   flexShrink={0}
                 />
               ) : null}
               <Box textAlign="left" lineHeight="1.15">
-                <Text fontSize={{ base: 'xs', sm: 'sm' }} fontWeight="medium">
+                <Text fontSize={{ base: 'xs', sm: 'sm' }} fontWeight="medium" color="camp.text">
                   {activity.icon} {activity.text}
                 </Text>
                 {activity.sub ? (

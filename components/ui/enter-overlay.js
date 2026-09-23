@@ -7,23 +7,39 @@ import { UI } from '../../lib/interface-labels'
 const mono =
   "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'M PLUS Rounded 1c', monospace"
 
+// Chòm sao trước cổng trại — tọa độ cố định, nhấp nháy theo delay riêng
+const STARS = [
+  { left: '12%', top: '18%', size: 3, delay: 0 },
+  { left: '22%', top: '32%', size: 2, delay: 0.8 },
+  { left: '33%', top: '14%', size: 2, delay: 1.4 },
+  { left: '46%', top: '26%', size: 3, delay: 0.4 },
+  { left: '58%', top: '12%', size: 2, delay: 1.1 },
+  { left: '68%', top: '30%', size: 3, delay: 0.2 },
+  { left: '79%', top: '16%', size: 2, delay: 1.6 },
+  { left: '88%', top: '34%', size: 3, delay: 0.9 },
+  { left: '16%', top: '58%', size: 2, delay: 1.9 },
+  { left: '84%', top: '60%', size: 2, delay: 0.6 }
+]
+
 /**
  * Màn hình "click to enter": trang web hiện blur mờ phía sau, bấm ở
  * đâu cũng được — overlay tan đi, trang hiện rõ. Cú click này đồng thời
  * là user-gesture để trình duyệt mở khóa nhạc nền (xem BgMusic).
+ * Bối cảnh = "cổng bãi trại lúc chạng vạng": chòm sao nhấp nháy + ánh lửa
+ * vàng sau lều △.
  */
 const EnterOverlay = () => {
   const [entered, setEntered] = useState(false)
-  // Text "bấm để vào" theo vòng quay ngôn ngữ giao diện (15s)
+  // Text "bấm để vào" theo vòng quay ngôn ngữ giao diện (10s)
   const { lang } = useInterfaceLang()
 
   const veil = useColorModeValue(
-    'rgba(240, 231, 219, 0.62)',
-    'rgba(17, 18, 35, 0.62)'
+    'rgba(247, 239, 220, 0.8)',
+    'rgba(20, 19, 29, 0.86)'
   )
-  const textColor = useColorModeValue('gray.800', 'whiteAlpha.900')
-  const pillBg = useColorModeValue('whiteAlpha.700', 'whiteAlpha.100')
-  const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
+  const textColor = 'camp.text'
+  const pillBg = 'camp.card'
+  const pillBorder = 'camp.lineStrong'
 
   // Khóa cuộn trang trong khi overlay đang phủ
   useEffect(() => {
@@ -61,27 +77,71 @@ const EnterOverlay = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            overflow: 'hidden',
             background: veil,
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
             cursor: 'pointer'
           }}
         >
+          {/* Chòm sao nhấp nháy */}
+          {STARS.map((s, i) => (
+            <motion.span
+              key={i}
+              aria-hidden="true"
+              animate={{ opacity: [0.15, 0.9, 0.15] }}
+              transition={{
+                repeat: Infinity,
+                duration: 2.6,
+                delay: s.delay,
+                ease: 'easeInOut'
+              }}
+              style={{
+                position: 'absolute',
+                left: s.left,
+                top: s.top,
+                width: s.size,
+                height: s.size,
+                borderRadius: '50%',
+                background: 'var(--chakra-colors-camp-ember)',
+                boxShadow: '0 0 6px var(--chakra-colors-camp-ember)'
+              }}
+            />
+          ))}
+
+          {/* Ánh lửa trại sau lều △ */}
+          <Box
+            position="absolute"
+            left="50%"
+            top="50%"
+            w={['260px', '360px']}
+            h={['260px', '360px']}
+            transform="translate(-50%, -58%)"
+            borderRadius="full"
+            css={{
+              background:
+                'radial-gradient(closest-side, rgba(221,138,46,0.16), rgba(221,138,46,0.05) 55%, transparent 75%)'
+            }}
+            aria-hidden="true"
+          />
+
           <Box
             display="flex"
             flexDirection="column"
             alignItems="center"
             gap={4}
+            position="relative"
           >
             {/* △ nổi — motif Yuru Camp của trang */}
             <motion.span
               animate={{ y: [0, -8, 0] }}
               transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
               style={{
-                color: '#73daca',
-                fontSize: 30,
+                color: 'var(--chakra-colors-camp-ember)',
+                fontSize: 34,
                 lineHeight: 1,
-                textShadow: '0 0 16px rgba(115, 218, 202, 0.8)'
+                textShadow:
+                  '0 0 18px var(--chakra-colors-camp-ember), 0 0 44px rgba(221,138,46,0.5)'
               }}
               aria-hidden="true"
             >
@@ -97,21 +157,22 @@ const EnterOverlay = () => {
                 as="span"
                 alignItems="center"
                 columnGap={2}
-                border="1px solid"
+                border="1.5px solid"
                 borderColor={pillBorder}
                 bg={pillBg}
                 px={7}
                 py={3}
                 borderRadius="full"
+                color={textColor}
+                boxShadow="inset 0 1px 0 rgba(255,255,255,0.55), 0 14px 30px -14px rgba(120,90,40,0.4)"
                 css={{ backdropFilter: 'blur(10px)' }}
                 transition="border-color 0.2s"
-                _hover={{ borderColor: 'grassTeal' }}
+                _hover={{ borderColor: 'camp.teal' }}
               >
                 <Text
                   fontFamily={mono}
                   fontSize={{ base: 'md', sm: 'lg' }}
                   letterSpacing="wider"
-                  color={textColor}
                   userSelect="none"
                 >
                   {UI.clickToEnter[lang]}
@@ -119,13 +180,24 @@ const EnterOverlay = () => {
                 <motion.span
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ repeat: Infinity, duration: 1.1 }}
-                  style={{ color: '#73daca', fontFamily: mono, fontSize: 18 }}
+                  style={{ color: 'var(--chakra-colors-camp-ember)', fontFamily: mono, fontSize: 18 }}
                   aria-hidden="true"
                 >
                   ▍
                 </motion.span>
               </Flex>
             </motion.div>
+
+            <Text
+              color={textColor}
+              fontSize={{ base: 'xs', sm: 'sm' }}
+              opacity={0.75}
+              fontWeight={700}
+              textAlign="center"
+              userSelect="none"
+            >
+              {UI.gateHint[lang]}
+            </Text>
           </Box>
         </motion.div>
       )}

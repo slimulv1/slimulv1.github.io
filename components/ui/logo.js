@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Text, useColorModeValue } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 import FootprintIcon from '../icons/footprint'
 import styled from '@emotion/styled'
 
@@ -33,9 +33,9 @@ const Logo = () => {
       <LogoBox>
         <FootprintIcon />
         <Text
-          color={useColorModeValue('gray.800', 'whiteAlpha.900')}
+          color="camp.text"
           fontFamily="'Nunito', 'Kosugi Maru', sans-serif"
-          fontWeight="bold"
+          fontWeight={800}
           ml={3}
         >
           Slimu Neet

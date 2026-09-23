@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Text, useColorModeValue } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 import { useInterfaceLang } from '../../lib/interface-lang'
 
 // Tên tháng theo ngôn ngữ giao diện đang xoay vòng
@@ -8,7 +8,6 @@ const LOCALE = { en: 'en-US', ja: 'ja-JP' }
 const VnClock = () => {
   const { lang } = useInterfaceLang()
   const [time, setTime] = useState(null)
-  const clockColor = useColorModeValue('#3b4261', '#a9b1d6')
 
   useEffect(() => {
     const update = () => {
@@ -42,8 +41,8 @@ const VnClock = () => {
       fontSize={{ base: 'xs', sm: 'sm' }}
       fontFamily="'Nunito', 'Kosugi Maru', sans-serif"
       fontWeight={lang === 'ja' ? 400 : 700}
-      color={clockColor}
-      opacity={0.8}
+      color="camp.muted"
+      opacity={0.9}
       whiteSpace="nowrap"
     >
       {time}

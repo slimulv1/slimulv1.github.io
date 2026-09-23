@@ -25,12 +25,12 @@ export default class Document extends NextDocument {
           <meta
             name="theme-color"
             media="(prefers-color-scheme: light)"
-            content="#f0e7db"
+            content="#f7efdc"
           />
           <meta
             name="theme-color"
             media="(prefers-color-scheme: dark)"
-            content="#1a1b26"
+            content="#16151f"
           />
         </Head>
         <body>

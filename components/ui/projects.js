@@ -41,16 +41,20 @@ const itemVariants = {
 // CornerRin ở góc trang lắng nghe; chỉ thêm handler, không đổi markup/animation card).
 
 const ProjectCard = ({ repo, index = 0 }) => {
-  const bg = useColorModeValue('whiteAlpha.800', 'whiteAlpha.50')
-  const border = useColorModeValue('blackAlpha.300', 'whiteAlpha.200')
-  const nameColor = useColorModeValue('gray.800', 'whiteAlpha.900')
-  const descColor = useColorModeValue('gray.600', 'whiteAlpha.700')
+  const bg = 'camp.card'
+  const border = 'camp.line'
+  const nameColor = 'camp.text'
+  const descColor = 'camp.muted'
   // muted phải đủ contrast ở cỡ 12px (AA ≥ 4.5:1)
-  const mutedColor = useColorModeValue('gray.600', 'whiteAlpha.600')
-  const pathColor = useColorModeValue('gray.500', 'gray.500')
-  const arrowColor = useColorModeValue('gray.700', 'whiteAlpha.700')
-  // hover ring hiển thị rõ ở cả 2 mode
-  const hoverBorder = useColorModeValue('#2b6f6a', 'grassTeal')
+  const mutedColor = 'camp.muted'
+  const pathColor = 'camp.muted'
+  const arrowColor = 'camp.text'
+  // Bóng clay + highlight mép trên; hover border chuyển teal (nhận diện)
+  const cardShadow = useColorModeValue(
+    'inset 0 1px 0 rgba(255,255,255,0.65), 0 14px 28px -18px rgba(120,90,40,0.4), 0 3px 8px -4px rgba(120,90,40,0.16)',
+    'inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 28px -18px rgba(0,0,0,0.6), 0 3px 8px -4px rgba(0,0,0,0.3)'
+  )
+  const hoverBorder = 'camp.teal'
   // "push X trước" tính client-side để không bị đóng băng lúc build.
   // Live data (quét profile) không có pushedAt → không hiện dòng này.
   // timeAgo theo ngôn ngữ giao diện đang xoay vòng → recompute khi lang đổi.
@@ -88,25 +92,25 @@ const ProjectCard = ({ repo, index = 0 }) => {
         <Flex
           role="group"
           direction="column"
-          gap={2.5}
-          p={4}
-          borderRadius="lg"
-          borderWidth="1px"
+          gap={3}
+          p={5}
+          borderRadius="card"
+          borderWidth="1.5px"
+          borderStyle="solid"
           borderColor={border}
           bg={bg}
-          boxShadow={useColorModeValue('0 1px 3px rgba(0,0,0,0.08)', 'none')}
-          css={{ backdropFilter: 'blur(10px)' }}
+          boxShadow={cardShadow}
           h="100%"
           transition="border-color 0.2s, transform 0.2s, box-shadow 0.2s"
           _hover={{
             borderColor: hoverBorder,
-            transform: 'translateY(-2px)',
+            transform: 'translateY(-3px)',
             boxShadow:
-              '0 0 0 1px rgba(115, 218, 202, 0.35), 0 8px 24px -12px rgba(115, 218, 202, 0.25)'
+              '0 0 0 1.5px rgba(115, 218, 202, 0.25), 0 18px 34px -18px rgba(115, 218, 202, 0.35), 0 3px 8px -4px rgba(120,90,40,0.16)'
           }}
           _focusWithin={{
             borderColor: hoverBorder,
-            boxShadow: '0 0 0 1px rgba(115, 218, 202, 0.35)'
+            boxShadow: '0 0 0 1.5px rgba(115, 218, 202, 0.3)'
           }}
         >
           {/* Header: đường dẫn kiểu prompt + star + mũi tên */}
@@ -119,7 +123,7 @@ const ProjectCard = ({ repo, index = 0 }) => {
               noOfLines={1}
             >
               <Text as="span" color={pathColor} mr={1} fontWeight="normal">
-                ~/
+                △ ~/
               </Text>
               {repo.name}
             </Text>
