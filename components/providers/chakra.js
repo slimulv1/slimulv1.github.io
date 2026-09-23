@@ -2,8 +2,9 @@ import { ChakraProvider, localStorageManager } from '@chakra-ui/react'
 import { useInterfaceLang } from '../../lib/interface-lang'
 import theme, { jaTheme } from '../../lib/theme'
 
-// Chọn theme theo ngôn ngữ: khi tiếng Nhật, dùng jaTheme (toàn bộ thang cỡ chữ
-// +1px) để bù glyph M PLUS Rounded 1c nhạt/thưa — giao diện không bị "thu nhỏ".
+// Chọn theme theo ngôn ngữ: khi tiếng Nhật, dùng jaTheme — font-weight 500 cho
+// body (bù nét glyph M PLUS Rounded 1c nhạt/thưa) mà GIỮ NGUYÊN cỡ chữ, nên
+// hình học các khung không đổi khi xoay en ↔ ja.
 export default function Chakra({ children }) {
   const { lang } = useInterfaceLang()
   return (
