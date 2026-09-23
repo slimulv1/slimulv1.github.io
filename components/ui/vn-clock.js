@@ -40,8 +40,8 @@ const VnClock = () => {
     <Text
       as="span"
       fontSize={{ base: 'xs', sm: 'sm' }}
-      fontFamily="'M PLUS Rounded 1c', sans-serif"
-      fontWeight={700}
+      fontFamily="'Nunito', 'Kosugi Maru', sans-serif"
+      fontWeight={lang === 'ja' ? 400 : 700}
       color={clockColor}
       opacity={0.8}
       whiteSpace="nowrap"
