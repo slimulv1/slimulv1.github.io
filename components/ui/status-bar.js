@@ -243,11 +243,14 @@ const StatusBar = () => {
           </Box>
         </Flex>
 
-        {/* BÊN PHẢI: trạng thái + đang làm gì */}
+        {/* BÊN PHẢI: trạng thái + đang làm gì
+            Mobile: xuống hàng riêng (felx 1 0 100%) để en/ja cùng cấu trúc —
+            nếu không, "オンライン" (nowrap) không vừa cạnh cột trái → chỉ ja
+            bị đẩy xuống → lệch chiều cao card giữa 2 ngôn ngữ (bất biến en≡ja). */}
         <Flex
           alignItems="center"
           justifyContent={{ base: 'center', sm: 'flex-end' }}
-          flex="1"
+          flex={{ base: '1 0 100%', sm: '1' }}
           columnGap={3}
           flexWrap="wrap"
         >
