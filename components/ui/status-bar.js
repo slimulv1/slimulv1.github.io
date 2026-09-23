@@ -222,6 +222,202 @@ const CampScene = ({ status }) => {
   )
 }
 
+/**
+ * CampHalo — "hào quang bãi trại": trang trí chuyển động mượt QUANH viền avatar,
+ * phản ánh trạng thái Discord bằng cùng ngôn ngữ motif với CampScene:
+ *   online  → lửa trại: quầng hơi ấm hít thở + 3 tia lửa ember bay quanh viền
+ *   idle    → đèn lồng: 2 vòng sóng ánh sáng lan ra dịu dàng khỏi viền
+ *   dnd     → ấm trà sôi: hơi nước teal bốc lên từ đỉnh avatar
+ *   offline → đang ngủ: 1 ngôi sao lấp lánh thật chậm, êm ái
+ * Thuần trang trí (aria-hidden), absolute → không đụng bố cục (giữ bất biến
+ * en≡ja); transform/opacity-only + tôn trọng prefers-reduced-motion (tĩnh,
+ * nét trang trí vẫn hiện).
+ */
+const CampHalo = ({ status }) => {
+  const reduced = useReducedMotion()
+  const ember = useColorModeValue('#dd8a2e', '#f2a541')
+  const emberSoft = useColorModeValue('#f4a23f', '#ffcf6b')
+  const teal = useColorModeValue('#188f7f', '#73daca')
+  const grey = '#9b9ba5'
+  const still = { duration: 0 }
+
+  if (status === 'online') {
+    return (
+      <>
+        {/* Hơi ấm lửa trại — quầng hít thở quanh avatar */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${ember}30 0%, transparent 64%)`,
+            pointerEvents: 'none'
+          }}
+          animate={reduced ? { opacity: 0.6 } : { opacity: [0.5, 0.95, 0.5] }}
+          transition={
+            reduced ? still : { repeat: Infinity, duration: 2.8, ease: 'easeInOut' }
+          }
+        />
+        {/* 3 tia lửa ember bay vòng quanh viền (mỗi tia 1 quỹ đạo riêng) */}
+        {[0, 120, 240].map(baseDeg => (
+          <motion.span
+            key={baseDeg}
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+            animate={reduced ? { rotate: baseDeg } : { rotate: baseDeg + 360 }}
+            transition={
+              reduced ? still : { repeat: Infinity, duration: 9, ease: 'linear' }
+            }
+          >
+            <motion.span
+              style={{
+                position: 'absolute',
+                top: -3,
+                left: '50%',
+                width: 6,
+                height: 6,
+                marginLeft: -3,
+                borderRadius: '50%',
+                background: emberSoft,
+                boxShadow: `0 0 6px ${ember}, 0 0 12px ${emberSoft}`
+              }}
+              animate={reduced ? { opacity: 0.9 } : { opacity: [0.45, 1, 0.45] }}
+              transition={
+                reduced
+                  ? still
+                  : {
+                      repeat: Infinity,
+                      duration: 1.7,
+                      ease: 'easeInOut',
+                      delay: (baseDeg / 120) * 0.4
+                    }
+              }
+            />
+          </motion.span>
+        ))}
+      </>
+    )
+  }
+
+  if (status === 'idle') {
+    return (
+      <>
+        {/* Ánh đèn lồng hít thở chậm */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${ember}24 0%, transparent 62%)`,
+            pointerEvents: 'none'
+          }}
+          animate={reduced ? { opacity: 0.5 } : { opacity: [0.4, 0.8, 0.4] }}
+          transition={
+            reduced ? still : { repeat: Infinity, duration: 3.2, ease: 'easeInOut' }
+          }
+        />
+        {/* 2 vòng sóng lan ra khỏi viền như ánh đèn lay động */}
+        {[0, 1].map(i => (
+          <motion.span
+            key={i}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: '1.5px solid',
+              borderColor: ember,
+              pointerEvents: 'none'
+            }}
+            animate={
+              reduced ? { opacity: 0.28, scale: 1 } : { opacity: [0.5, 0], scale: [1, 1.38] }
+            }
+            transition={
+              reduced ? still : { repeat: Infinity, duration: 2.4, ease: 'easeOut', delay: i * 1.1 }
+            }
+          />
+        ))}
+      </>
+    )
+  }
+
+  if (status === 'dnd') {
+    return (
+      <>
+        {/* Teal nhẹ — ấm nước đang sôi */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${teal}1f 0%, transparent 60%)`,
+            pointerEvents: 'none'
+          }}
+          animate={reduced ? { opacity: 0.4 } : { opacity: [0.3, 0.7, 0.3] }}
+          transition={
+            reduced ? still : { repeat: Infinity, duration: 3, ease: 'easeInOut' }
+          }
+        />
+        {/* Hơi nước bốc lên đỉnh avatar */}
+        <Box
+          position="absolute"
+          top={-4}
+          left="50%"
+          marginLeft={-8}
+          w="16px"
+          h="14px"
+          pointerEvents="none"
+          aria-hidden="true"
+        >
+          <svg width="16" height="14" viewBox="0 0 16 14" fill="none" focusable="false">
+            <motion.path
+              d="M4 13 Q4.8 9.5 4 5"
+              stroke={teal}
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              animate={reduced ? { opacity: 0.7 } : { opacity: [0, 0.85, 0] }}
+              transition={
+                reduced ? still : { repeat: Infinity, duration: 2.2, ease: 'easeInOut' }
+              }
+            />
+            <motion.path
+              d="M9 13 Q9.9 8.6 9 3.6"
+              stroke={teal}
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              animate={reduced ? { opacity: 0.7 } : { opacity: [0, 0.85, 0] }}
+              transition={
+                reduced
+                  ? still
+                  : { repeat: Infinity, duration: 2.2, delay: 1.1, ease: 'easeInOut' }
+              }
+            />
+          </svg>
+        </Box>
+      </>
+    )
+  }
+
+  // offline — ngủ yên: ngôi sao lấp lánh thật dịu, không ồn ào
+  return (
+    <motion.div
+      style={{
+        position: 'absolute',
+        top: -3,
+        right: -4,
+        pointerEvents: 'none'
+      }}
+      animate={reduced ? { opacity: 0.6 } : { opacity: [0.3, 0.8, 0.3] }}
+      transition={reduced ? still : { repeat: Infinity, duration: 5, ease: 'easeInOut' }}
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+        <path
+          d="M6 1.5 C6.7 4 7.9 5.2 10.4 5.9 C7.9 6.6 6.7 7.8 6 10.3 C5.3 7.8 4.1 6.6 1.6 5.9 C4.1 5.2 5.3 4 6 1.5 Z"
+          fill={grey}
+        />
+      </svg>
+    </motion.div>
+  )
+}
+
 const getActivityText = (presence, lang) => {
   if (!presence) return null
 
@@ -420,39 +616,68 @@ const StatusPresent = ({
       >
         {/* BÊN TRÁI: avatar + tên */}
         <Flex alignItems="center" columnGap={3}>
-          {avatar ? (
+          {/* Hào quang bãi trại — trang trí chuyển động quanh viền avatar,
+              crossfade theo status (absolute → không layout shift) */}
+          <Box position="relative" flexShrink={0} w="52px" h="52px">
             <Box
-              as="img"
-              src={avatar}
-              alt="Discord avatar"
-              w="52px"
-              h="52px"
-              borderRadius="full"
-              border="3px solid"
-              borderColor={avatarColor}
-              boxShadow={`0 0 0 3px ${avatarColor}26, 0 0 18px ${avatarColor}33`}
-              objectFit="cover"
-              flexShrink={0}
-              // Status đổi real-time → màu nhẫn + quầng trượt mượt 0.4s
-              css={{
-                transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
-              }}
-            />
-          ) : (
-            <Box
-              w="52px"
-              h="52px"
-              borderRadius="full"
-              border="3px solid"
-              borderColor={avatarColor}
-              boxShadow={`0 0 0 3px ${avatarColor}26`}
-              bg="camp.tealSoft"
-              flexShrink={0}
-              css={{
-                transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
-              }}
-            />
-          )}
+              position="absolute"
+              top="-6px"
+              right="-6px"
+              bottom="-6px"
+              left="-6px"
+              pointerEvents="none"
+              aria-hidden="true"
+              zIndex={0}
+            >
+              <AnimatePresence mode="sync" initial={false}>
+                <motion.span
+                  key={presence.discord_status || 'offline'}
+                  style={{ position: 'absolute', inset: 0 }}
+                  initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduced ? { opacity: 1 } : { opacity: 0 }}
+                  transition={reduced ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
+                >
+                  <CampHalo status={presence.discord_status || 'offline'} />
+                </motion.span>
+              </AnimatePresence>
+            </Box>
+            {avatar ? (
+              <Box
+                as="img"
+                position="relative"
+                zIndex={1}
+                src={avatar}
+                alt="Discord avatar"
+                w="52px"
+                h="52px"
+                borderRadius="full"
+                border="3px solid"
+                borderColor={avatarColor}
+                boxShadow={`0 0 0 3px ${avatarColor}26, 0 0 18px ${avatarColor}33`}
+                objectFit="cover"
+                // Status đổi real-time → màu nhẫn + quầng trượt mượt 0.4s
+                css={{
+                  transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
+                }}
+              />
+            ) : (
+              <Box
+                position="relative"
+                zIndex={1}
+                w="52px"
+                h="52px"
+                borderRadius="full"
+                border="3px solid"
+                borderColor={avatarColor}
+                boxShadow={`0 0 0 3px ${avatarColor}26`}
+                bg="camp.tealSoft"
+                css={{
+                  transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
+                }}
+              />
+            )}
+          </Box>
           <Box lineHeight="1.15">
             <Flex
               alignItems="center"
