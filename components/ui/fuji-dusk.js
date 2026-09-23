@@ -256,15 +256,21 @@ const FujiDusk = ({ variant = 'hero', ...props }) => {
       )}
 
       {/* Núi Phú Sĩ — đường cong mềm, đỉnh tuyết trắng (dark: núi tối; sáng:
-          núi mờ xanh-tím như trong màn sương ban mai) */}
-      <path
-        d="M316 320 Q430 318 452 96 Q472 56 500 34 Q528 56 548 96 Q570 318 684 320 Z"
-        fill={P.mountain}
-      />
-      <path
-        d="M458 92 Q474 52 500 34 Q526 52 542 92 Q520 72 500 62 Q480 72 458 92 Z"
-        fill={P.snow}
-      />
+          núi mờ xanh-tím như trong màn sương ban mai).
+          Variant hero: hạ núi xuống +112 (viewBox-y) để đỉnh (y 34 → 146) thoát
+          khỏi vùng fade đầu của mask band hero (0→28% chiều cao band) → cap
+          tuyết đọc rõ ở mọi viewport; band hero không mask→ giữ nguyên hình học
+          cũ. Dịch chuyển trong svg nên không đụng layout/opacity band. */}
+      <g transform={variant === 'hero' ? 'translate(0 112)' : undefined}>
+        <path
+          d="M316 320 Q430 318 452 96 Q472 56 500 34 Q528 56 548 96 Q570 318 684 320 Z"
+          fill={P.mountain}
+        />
+        <path
+          d="M458 92 Q474 52 500 34 Q526 52 542 92 Q520 72 500 62 Q480 72 458 92 Z"
+          fill={P.snow}
+        />
+      </g>
       {/* Thông hai bên — dark: silhouette; sáng: rừng thông xanh */}
       <g fill={P.pine}>
         <path d="M70 320 L108 252 L146 320 Z" />
