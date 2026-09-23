@@ -77,6 +77,9 @@ const WebLink = ({ href, icon: Icon, label }) => {
       onTouchStart={() => rinPeek(label)}
       onTouchMove={rinClear}
       onTouchCancel={rinClear}
+      // Keyboard: focus/blur cũng hiện bubble peek (trước đây chỉ hover/touch)
+      onFocus={() => rinPeek(label)}
+      onBlur={rinClear}
       display="inline-flex"
       alignItems="center"
       columnGap={2.5}

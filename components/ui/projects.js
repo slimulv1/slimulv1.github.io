@@ -88,6 +88,9 @@ const ProjectCard = ({ repo, index = 0 }) => {
         onTouchStart={() => rinPeek(repo.name)}
         onTouchMove={rinClear}
         onTouchCancel={rinClear}
+        // Keyboard: focus/blur cũng bật/tắt bubble peek (trước đây chỉ hover/touch)
+        onFocus={() => rinPeek(repo.name)}
+        onBlur={rinClear}
       >
         <Flex
           role="group"
