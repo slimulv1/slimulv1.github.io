@@ -1,4 +1,11 @@
-import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
+import { useState, useEffect, useRef } from 'react'
+import {
+  Box,
+  Flex,
+  Text,
+  useColorModeValue,
+  visuallyHiddenStyle
+} from '@chakra-ui/react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   useDiscordPresence,
@@ -67,6 +74,64 @@ export const DiscordDot = ({ color, pulse = false, size = 10 }) => {
     />
   )
 }
+
+/**
+ * Hôm nay ở bãi trại — 2 "con tem" tính từ giờ/mùa ĐỊA PHƯƠNG của khách ghé
+ * (mỗi khách có buổi trại riêng của họ — đúng tinh thần Yuru Camp△ mùa màng):
+ *   • tem MÙA:  🌸 Xuân / ☀️ Hạ / 🍂 Thu / ❄️ Đông
+ *   • tem THỜI ĐIỂM: 🌅 sáng / ☀️ trưa / 🌆 chiều tà (giờ lửa trại) / 🌙 đêm trại
+ * Biểu diễn ICON-ONLY (emoji + title/aria-label song ngữ) trong chip KÍCH THƯỚC
+ * CỐ ĐỊNH như tem sưu tầm → không có text thay đổi độ rộng → giữ nguyên bất
+ * biến hình học en≡ja (audit không thêm diff mới).
+ */
+const CAMP_CYCLE = () => {
+  // Giờ địa phương của khách (tính lúc render, không gắn giờ build) → buổi trại
+  const h = new Date().getHours()
+  const time =
+    h >= 5 && h < 11
+      ? { icon: '🌅', en: 'Morning camp', ja: '朝のキャンプ' }
+      : h >= 11 && h < 16
+        ? { icon: '☀️', en: 'Daytime at camp', ja: '昼のキャンプ' }
+        : h >= 16 && h < 19
+          ? { icon: '🌆', en: 'Evening by the fire', ja: '夕方の焚き火' }
+          : { icon: '🌙', en: 'Night camp', ja: '夜のキャンプ' }
+  // Tháng (1-12) → mùa (khớp mạch truyện Yuru Camp: mở đầu mùa thu)
+  const m = new Date().getMonth() + 1
+  const season =
+    m >= 3 && m <= 5
+      ? { icon: '🌸', en: 'Spring', ja: '春' }
+      : m >= 6 && m <= 8
+        ? { icon: '☀️', en: 'Summer', ja: '夏' }
+        : m >= 9 && m <= 11
+          ? { icon: '🍂', en: 'Autumn', ja: '秋' }
+          : { icon: '❄️', en: 'Winter', ja: '冬' }
+  return { time, season }
+}
+
+/** Chip tem: kích thước cố định (22×20), viền nét đứt như tem sưu tầm, không text. */
+const CampStamp = ({ icon, en, ja }) => (
+  <Box
+    as="span"
+    role="img"
+    aria-label={`${en} · ${ja}`}
+    title={`${en} · ${ja}`}
+    w="22px"
+    h="20px"
+    display="inline-flex"
+    alignItems="center"
+    justifyContent="center"
+    borderRadius="6px"
+    border="1.5px dashed"
+    borderColor="camp.lineStrong"
+    bg="camp.cardAlt"
+    fontSize="xs"
+    lineHeight={1}
+    flexShrink={0}
+    css={{ userSelect: 'none' }}
+  >
+    {icon}
+  </Box>
+)
 
 /**
  * CampScene — "góc bãi trại ngay bây giờ": icon SVG 22px phản ánh trạng thái
@@ -593,6 +658,17 @@ const StatusPresent = ({
     user.display_name || user.global_name || user.username || 'Discord'
   const subName = user.username ? `@${user.username}` : ''
 
+  // Live region: chỉ THÔNG BÁO khi trạng thái Discord ĐỔI THẬT (lên máy ↔ đi
+  // ngủ ↔ offline...), không đọc lại mỗi 10s khi vòng quay ngôn ngữ remount
+  // label (tránh ồn cho screen reader). Text ẩn thị giác, aria-live=polite.
+  const prevStatus = useRef(presence.discord_status)
+  const [announce, setAnnounce] = useState('')
+  useEffect(() => {
+    if (prevStatus.current === presence.discord_status) return
+    prevStatus.current = presence.discord_status
+    setAnnounce(`Discord: ${status.labels[lang]}`)
+  }, [presence.discord_status, status.labels[lang]])
+
   return (
     <Box
       {...sheet}
@@ -606,6 +682,10 @@ const StatusPresent = ({
       onTouchCancel={rinClear}
     >
       {tape}
+      {/* Live region ẩn — đọc khi status Discord đổi thật (không theo vòng quay ngôn ngữ) */}
+      <Box as="span" aria-live="polite" __css={visuallyHiddenStyle}>
+        {announce}
+      </Box>
       <Flex
         alignItems="center"
         justifyContent="space-between"
@@ -736,6 +816,18 @@ const StatusPresent = ({
                   </Text>
                 </Flex>
               ) : null}
+              {/* Tem "hôm nay ở bãi trại" — tem MÙA + tem BUỔI TRẠI tính từ giờ
+                  địa phương khách ghé (giống tem sưu tầm stamp rally; icon-only,
+                  chip kích thước cố định → không đổi theo en/ja, giữ invariant) */}
+              {(() => {
+                const { time, season } = CAMP_CYCLE()
+                return (
+                  <>
+                    <CampStamp {...season} />
+                    <CampStamp {...time} />
+                  </>
+                )
+              })()}
             </Flex>
             {subName ? (
               <Text fontSize="xs" opacity={0.75} color="camp.muted">
