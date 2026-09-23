@@ -665,21 +665,24 @@ const StatusPresent = ({
               </AnimatePresence>
             </Box>
             {avatar ? (
-              <Box
-                as="img"
-                position="relative"
-                zIndex={1}
+              <img
                 src={avatar}
                 alt="Discord avatar"
-                w="52px"
-                h="52px"
-                borderRadius="full"
-                border="3px solid"
-                borderColor={avatarColor}
-                boxShadow={`0 0 0 3px ${avatarColor}26, 0 0 18px ${avatarColor}33`}
-                objectFit="cover"
-                // Status đổi real-time → màu nhẫn + quầng trượt mượt 0.4s
-                css={{
+                // width/height gốc (64×64 từ ?size=64) → trình duyệt reserve
+                // đúng khung trước khi ảnh tải xong (chống CLS). Dùng <img> gốc
+                // vì Chakra Box sẽ nuốt width/height thành CSS, không sinh attribute.
+                width="64"
+                height="64"
+                style={{
+                  position: 'relative',
+                  zIndex: 1,
+                  width: 52,
+                  height: 52,
+                  borderRadius: '50%',
+                  border: `3px solid ${avatarColor}`,
+                  boxShadow: `0 0 0 3px ${avatarColor}26, 0 0 18px ${avatarColor}33`,
+                  objectFit: 'cover',
+                  // Status đổi real-time → màu nhẫn + quầng trượt mượt 0.4s
                   transition: 'border-color 0.4s ease, box-shadow 0.4s ease'
                 }}
               />
@@ -739,14 +742,13 @@ const StatusPresent = ({
                   border="1px solid"
                   borderColor={pillBorder}
                 >
-                  <Box
-                    as="img"
+                  <img
                     src="/images/badge-clan.png"
                     alt=""
-                    w="16px"
-                    h="16px"
-                    flexShrink={0}
-                    css={{ display: 'inline-block' }}
+                    // width/height gốc (32×32) → reserve khung, chống CLS
+                    width="32"
+                    height="32"
+                    style={{ width: 16, height: 16, flexShrink: 0, display: 'inline-block' }}
                   />
                   <Text
                     fontSize="xs"

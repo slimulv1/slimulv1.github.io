@@ -93,7 +93,8 @@ const WebLink = ({ href, icon: Icon, label }) => {
       fontWeight={700}
       fontSize="sm"
       boxShadow="inset 0 1px 0 rgba(255,255,255,0.55), 0 8px 18px -10px rgba(120,90,40,0.35)"
-      transition="all 0.2s"
+      transition="border-color 0.2s, box-shadow 0.2s, transform 0.2s"
+      touchAction="manipulation"
       _hover={{
         borderColor: 'camp.teal',
         transform: 'translateY(-2px)',
@@ -102,8 +103,8 @@ const WebLink = ({ href, icon: Icon, label }) => {
         textDecoration: 'none'
       }}
     >
-      <Box as="span" display="inline-flex" color="camp.ember">
-        <Icon size={18} />
+      <Box as="span" display="inline-flex" color="camp.ember" aria-hidden="true">
+        <Icon size={18} aria-hidden="true" focusable="false" />
       </Box>
       {label}
     </Link>
@@ -339,7 +340,7 @@ const Home = ({ github }) => {
               <Box
                 aria-hidden="true"
                 visibility="hidden"
-                sx={{ textAlign: 'justify', textIndent: '1em', hyphens: 'auto' }}
+                sx={{ textWrap: 'balance', textIndent: '1em', hyphens: 'auto' }}
               >
                 {UI.marryBed.en}
               </Box>
@@ -350,7 +351,7 @@ const Home = ({ github }) => {
                 top={5}
                 left={5}
                 right={5}
-                sx={{ textAlign: 'justify', textIndent: '1em', hyphens: 'auto' }}
+                sx={{ textWrap: 'balance', textIndent: '1em', hyphens: 'auto' }}
               >
                 {/* Micro-fade theo vòng quay ngôn ngữ — spacer ẩn vẫn giữ
                     chiều cao note cố định (bất biến en≡ja không đổi) */}

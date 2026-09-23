@@ -47,7 +47,7 @@ const ThemeToggleButton = () => {
   return (
     <AnimatePresence mode='wait' initial={false}>
       <motion.div
-        style={{ display: 'inline-block' }}
+        style={{ display: 'inline-block', position: 'relative' }}
         key={useColorModeValue('light', 'dark')}
         initial={{ y: reduced ? 0 : -20, rotate: reduced ? 0 : -45, opacity: 0 }}
         animate={{ y: 0, rotate: 0, opacity: 1 }}
@@ -59,6 +59,13 @@ const ThemeToggleButton = () => {
           colorScheme={useColorModeValue('teal', 'orange')}
           icon={useColorModeValue(<MoonIcon />, <SunIcon />)}
           onClick={handleToggle}
+          // Chặn trì hoãn 300ms của double-tap-zoom trên mobile Safari
+          touchAction="manipulation"
+          // Vùng chạm ≥44px (WCAG 2.5.8): IconButton mặc định 40px → nới
+          // 44px rồi margin âm -2px HOÀN LẠI, nên navbar giữ nguyên chiều cao.
+          minW="44px"
+          minH="44px"
+          m="-2px"
         ></IconButton>
       </motion.div>
     </AnimatePresence>

@@ -40,7 +40,7 @@ const Main = ({ children }) => {
   }, [])
 
   return (
-    <Box as="main" pb={8}>
+    <Box as="main" id="main" tabIndex={-1} pb={8}>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="Slimu Neet's home — a laid-back campsite on the web" />
@@ -61,6 +61,44 @@ const Main = ({ children }) => {
 
       {/* CSS cho View Transitions API khi đổi ngày ⇄ đêm trại */}
       <ViewTransitionStyles />
+
+      {/* Skip link: bàn phím / screen reader nhảy thẳng tới nội dung, bỏ qua
+          navbar pill + logo + đồng hồ + nút theme. Ẩn bằng clip-path (không
+          dùng display:none vì sẽ mất khả năng focus), hiện khi :focus-visible. */}
+      <Box
+        as="a"
+        href="#main"
+        position="fixed"
+        top={3}
+        left={3}
+        zIndex={60}
+        px={4}
+        py={2}
+        borderRadius="full"
+        bg="camp.card"
+        color="camp.text"
+        fontWeight={800}
+        fontSize="sm"
+        border="2px solid"
+        borderColor="camp.teal"
+        boxShadow="0 10px 28px -12px rgba(0,0,0,0.5)"
+        css={{
+          // Ẩn khỏi layout + khỏi tab-order khi chưa focus
+          clipPath: 'inset(50%)',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          '&:focus-visible, &:focus': {
+            clipPath: 'inset(0)',
+            width: 'auto',
+            height: 'auto',
+            overflow: 'visible'
+          }
+        }}
+      >
+        Skip to content
+      </Box>
 
       {/* Thanh "con đường mòn" tiến độ cuộn — ẩn khi prefers-reduced-motion */}
       <TrailProgress />

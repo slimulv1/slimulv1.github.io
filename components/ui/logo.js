@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Box, Text } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 
 const LogoBox = styled.span`
@@ -7,12 +7,16 @@ const LogoBox = styled.span`
   font-size: 18px;
   display: inline-flex;
   align-items: center;
-  height: 30px;
   line-height: 20px;
-  padding: 8px 10px;
+  /* Vùng chạm ≥44px (WCAG 2.5.8): padding 12px + line 20px = 44px.
+     margin-top/bottom -6px HOÀN LẠI đúng phần padding → navbar giữ nguyên
+     chiều cao cũ (không đẩy layout, không ảnh hưởng bất biến en≡ja). */
+  padding: 12px 10px;
+  margin: -6px 0;
+  transition: background-color 0.2s, border-radius 0.2s;
 
   > img {
-    transition: 200ms ease;
+    transition: transform 200ms ease;
   }
 
   &:hover > img {
@@ -22,7 +26,7 @@ const LogoBox = styled.span`
   /* Mobile: logo gọn lại để navbar độc 1 hàng */
   @media (max-width: 479px) {
     font-size: 15px;
-    padding: 6px 8px;
+    padding: 12px 8px;
   }
 `
 
@@ -32,15 +36,17 @@ const Logo = () => {
       <LogoBox>
         {/* Logo paw thay cho icon bàn chân cũ — ảnh PNG nền trong suốt,
             hoạt động tốt trên cả theme sáng lẫn tối */}
-        <Box
-          as="img"
+        {/* width/height GỐC (128×128) chính là thuộc tính HTML width/height
+            → trình duyệt reserve đúng khung trước khi ảnh tải xong (chống CLS).
+            Không dùng Box/width= vì Chakra nuốt thành CSS, không sinh attribute.
+            CSS width/height 24px vẫn quyết định kích thước hiển thị. */}
+        <img
           src="/images/logo.png"
           alt=""
-          w="24px"
-          h="24px"
-          borderRadius="7px"
-          objectFit="cover"
+          width="128"
+          height="128"
           aria-hidden="true"
+          style={{ width: 24, height: 24, borderRadius: 7, objectFit: 'cover' }}
         />
         <Text
           color="camp.text"

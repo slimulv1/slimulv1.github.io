@@ -25,16 +25,21 @@ export const DiscordBadges = ({ publicFlags }) => {
     <Flex columnGap="2px" alignItems="center">
       {shown.map(f =>
         f.img ? (
-          <Box
+          <img
             key={f.bit}
-            as="img"
             src={f.img}
             title={f.title}
             alt={f.title}
-            w="16px"
-            h="16px"
-            flexShrink="0"
-            css={{ userSelect: 'none', display: 'inline-block' }}
+            // width/height gốc (256×256) → reserve khung, chống CLS
+            width="256"
+            height="256"
+            style={{
+              width: 16,
+              height: 16,
+              flexShrink: 0,
+              userSelect: 'none',
+              display: 'inline-block'
+            }}
           />
         ) : (
           <Box

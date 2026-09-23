@@ -128,7 +128,7 @@ const ProjectCard = ({ repo, index = 0 }) => {
                 borderRadius="full"
                 border="1.5px dashed"
                 borderColor="camp.ember"
-                color="camp.ember"
+                color="camp.emberText"
                 fontFamily={mono}
                 fontSize="10px"
                 fontWeight={800}
@@ -161,7 +161,7 @@ const ProjectCard = ({ repo, index = 0 }) => {
                   color={mutedColor}
                   title={UI.stars[lang]}
                 >
-                  <IoStar size="12" aria-hidden="true" />
+                  <IoStar size="12" aria-hidden="true" focusable="false" />
                   <Text fontSize="xs" fontFamily={mono}>
                     {repo.stars}
                   </Text>
@@ -174,7 +174,7 @@ const ProjectCard = ({ repo, index = 0 }) => {
                 _groupHover={{ opacity: 1, transform: 'translateX(3px)' }}
                 aria-hidden="true"
               >
-                <IoArrowForward size={14} />
+                <IoArrowForward size={14} aria-hidden="true" focusable="false" />
               </Box>
             </Flex>
           </Flex>
@@ -288,7 +288,7 @@ const Projects = ({ repos = pinnedRepos }) => {
           border="1.5px dashed"
           borderColor="camp.ember"
           bg="camp.emberSoft"
-          color="camp.ember"
+          color="camp.emberText"
           fontFamily={mono}
           fontSize="xs"
           fontWeight={800}
