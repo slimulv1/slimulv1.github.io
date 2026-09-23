@@ -76,65 +76,7 @@ export const DiscordDot = ({ color, pulse = false, size = 10 }) => {
 }
 
 /**
- * Hôm nay ở bãi trại — 2 "con tem" tính từ giờ/mùa ĐỊA PHƯƠNG của khách ghé
- * (mỗi khách có buổi trại riêng của họ — đúng tinh thần Yuru Camp△ mùa màng):
- *   • tem MÙA:  🌸 Xuân / ☀️ Hạ / 🍂 Thu / ❄️ Đông
- *   • tem THỜI ĐIỂM: 🌅 sáng / ☀️ trưa / 🌆 chiều tà (giờ lửa trại) / 🌙 đêm trại
- * Biểu diễn ICON-ONLY (emoji + title/aria-label song ngữ) trong chip KÍCH THƯỚC
- * CỐ ĐỊNH như tem sưu tầm → không có text thay đổi độ rộng → giữ nguyên bất
- * biến hình học en≡ja (audit không thêm diff mới).
- */
-const CAMP_CYCLE = () => {
-  // Giờ địa phương của khách (tính lúc render, không gắn giờ build) → buổi trại
-  const h = new Date().getHours()
-  const time =
-    h >= 5 && h < 11
-      ? { icon: '🌅', en: 'Morning camp', ja: '朝のキャンプ' }
-      : h >= 11 && h < 16
-        ? { icon: '☀️', en: 'Daytime at camp', ja: '昼のキャンプ' }
-        : h >= 16 && h < 19
-          ? { icon: '🌆', en: 'Evening by the fire', ja: '夕方の焚き火' }
-          : { icon: '🌙', en: 'Night camp', ja: '夜のキャンプ' }
-  // Tháng (1-12) → mùa (khớp mạch truyện Yuru Camp: mở đầu mùa thu)
-  const m = new Date().getMonth() + 1
-  const season =
-    m >= 3 && m <= 5
-      ? { icon: '🌸', en: 'Spring', ja: '春' }
-      : m >= 6 && m <= 8
-        ? { icon: '☀️', en: 'Summer', ja: '夏' }
-        : m >= 9 && m <= 11
-          ? { icon: '🍂', en: 'Autumn', ja: '秋' }
-          : { icon: '❄️', en: 'Winter', ja: '冬' }
-  return { time, season }
-}
-
-/** Chip tem: kích thước cố định (22×20), viền nét đứt như tem sưu tầm, không text. */
-const CampStamp = ({ icon, en, ja }) => (
-  <Box
-    as="span"
-    role="img"
-    aria-label={`${en} · ${ja}`}
-    title={`${en} · ${ja}`}
-    w="22px"
-    h="20px"
-    display="inline-flex"
-    alignItems="center"
-    justifyContent="center"
-    borderRadius="6px"
-    border="1.5px dashed"
-    borderColor="camp.lineStrong"
-    bg="camp.cardAlt"
-    fontSize="xs"
-    lineHeight={1}
-    flexShrink={0}
-    css={{ userSelect: 'none' }}
-  >
-    {icon}
-  </Box>
-)
-
-/**
- * CampScene — "góc bãi trại ngay bây giờ": icon SVG 22px phản ánh trạng thái
+ * CampScene — icon SVG 22px phản ánh trạng thái
  * Discord qua motif Yuru Camp△ (giữ màu dot chuẩn Discord riêng bên cạnh):
  *   online  → lửa trại + than hồng bốc lên (béng lửa chập chờn)
  *   idle    → lều + đèn lồng ấm (ánh sáng hít thở chậm)
@@ -816,19 +758,7 @@ const StatusPresent = ({
                   </Text>
                 </Flex>
               ) : null}
-              {/* Tem "hôm nay ở bãi trại" — tem MÙA + tem BUỔI TRẠI tính từ giờ
-                  địa phương khách ghé (giống tem sưu tầm stamp rally; icon-only,
-                  chip kích thước cố định → không đổi theo en/ja, giữ invariant) */}
-              {(() => {
-                const { time, season } = CAMP_CYCLE()
-                return (
-                  <>
-                    <CampStamp {...season} />
-                    <CampStamp {...time} />
-                  </>
-                )
-              })()}
-            </Flex>
+              </Flex>
             {subName ? (
               <Text fontSize="xs" opacity={0.75} color="camp.muted">
                 {subName}
@@ -849,7 +779,7 @@ const StatusPresent = ({
           flexWrap="wrap"
         >
           <Flex alignItems="center" columnGap={2} whiteSpace="nowrap">
-            {/* "Góc bãi trại" — scene crossfade trong khung 22px cố định
+            {/* Scene crossfade trong khung 22px cố định
                 (absolute → không đổi layout khi đổi status) */}
             <Box as="span" position="relative" display="inline-flex" w="22px" h="22px" flexShrink={0} aria-hidden="true">
               <AnimatePresence mode="sync" initial={false}>
