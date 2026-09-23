@@ -41,11 +41,11 @@ const Main = ({ children }) => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@slimu3620" />
         <meta name="twitter:creator" content="@slimu3620" />
-        <meta name="twitter:image" content="/images/yurucamp.png" />
+        <meta name="twitter:image" content="/images/card-campsite.png" />
         <meta property="og:site_name" content="Slimu Neet" />
         <meta name="og:title" content={PAGE_TITLE.en} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="/images/yurucamp.png" />
+        <meta property="og:image" content="/images/card-campsite.png" />
         <title>{PAGE_TITLE.en}</title>
       </Head>
 
