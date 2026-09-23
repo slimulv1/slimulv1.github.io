@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import {
   Link,
   Container,
@@ -8,9 +9,10 @@ import {
   ListItem,
   useColorModeValue
 } from '@chakra-ui/react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
+import StampTitle from '../components/ui/stamp-title'
 import Projects from '../components/ui/projects'
 import BgMusic from '../components/ui/bg-music'
 import EnterOverlay from '../components/ui/enter-overlay'
@@ -94,11 +96,23 @@ const Home = ({ github }) => {
   const reduced = useReducedMotion()
   // Đom đóm là họa tiết đêm → chỉ chạy ở theme tối (ban đêm), bỏ ở sáng
   const isDark = useColorModeValue(false, true)
+  // Parallax nhẹ cho band blue-hour: khi cuộn qua hero, band "trôi chậm hơn"
+  // nội dung (y 0→36) — cảm giác độ sâu; reduced-motion → đứng yên.
+  // Chỉ transform (GPU), band aria-hidden nên không ảnh hưởng bất biến en≡ja.
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start']
+  })
+  const bandY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 36])
   return (
     <Layout>
       <Container>
-        {/* Hero nằm trong wrapper tương đối để đặt blue-hour band SAU (z 0) */}
-        <Box position="relative">
+        {/* Hero nằm trong wrapper tương đối để đặt blue-hour band SAU (z 0);
+            bọc trong Section (mb 0) để hero — status + header + band — cũng
+            vào theo tầng đúng lúc bấm qua màn che (xem lib/entered.js) */}
+        <Section delay={0.05} mb={0}>
+        <Box position="relative" ref={heroRef}>
           <Box position="relative" zIndex={1}>
         <StatusBar />
 
@@ -108,7 +122,17 @@ const Home = ({ github }) => {
               Slimu Neet
             </Heading>
             <Text mt={3} color="camp.muted" fontSize={{ base: 'md', md: 'lg' }}>
-              {UI.intro[lang]}
+              {/* key=lang → khi vòng quay ngôn ngữ 10s đổi, text remount + inline
+                  micro-fade 0.22s (cùng pattern status label) thay vì cắt đột ngột */}
+              <motion.span
+                key={lang}
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ display: 'block' }}
+              >
+                {UI.intro[lang]}
+              </motion.span>
             </Text>
           </Box>
           <Box
@@ -170,8 +194,10 @@ const Home = ({ github }) => {
 
         {/* Blue-hour band sau hero — trang trí (aria-hidden): Phú Sĩ + trăng
             sao gọn bên PHẢI, vùng chữ bên trái được mask trong suốt để giữ
-            contrast; độ cao cố định + không text → an toàn bất biến en≡ja */}
+            contrast; độ cao cố định + không text → an toàn bất biến en≡ja.
+            as={motion.div} + style.y → parallax nhẹ khi cuộn (transform-only) */}
         <Box
+          as={motion.div}
           position="absolute"
           right={0}
           bottom={0}
@@ -181,7 +207,9 @@ const Home = ({ github }) => {
           pointerEvents="none"
           aria-hidden="true"
           opacity={useColorModeValue(0.55, 0.38)}
+          style={{ y: bandY }}
           css={{
+            willChange: 'transform',
             WebkitMaskImage:
               'linear-gradient(180deg, transparent 0%, #000 28%, #000 84%, transparent 100%)',
             maskImage:
@@ -191,11 +219,14 @@ const Home = ({ github }) => {
           <FujiDusk variant="hero" />
         </Box>
         </Box>
+        </Section>
 
         <Section delay={0.1}>
-          <Heading as="h3" variant="section-title">
-            I ♥
-          </Heading>
+          <StampTitle delay={0.18}>
+            <Heading as="h3" variant="section-title">
+              I ♥
+            </Heading>
+          </StampTitle>
           {/* Sticky-note giấy vàng: "marry your bed" */}
           <Box
             position="relative"
@@ -274,22 +305,36 @@ const Home = ({ github }) => {
                 right={5}
                 sx={{ textAlign: 'justify', textIndent: '1em', hyphens: 'auto' }}
               >
-                {UI.marryBed[lang]}
+                {/* Micro-fade theo vòng quay ngôn ngữ — spacer ẩn vẫn giữ
+                    chiều cao note cố định (bất biến en≡ja không đổi) */}
+                <motion.span
+                  key={lang}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  style={{ display: 'block' }}
+                >
+                  {UI.marryBed[lang]}
+                </motion.span>
               </Text>
             </Box>
         </Section>
 
         <Section delay={0.2}>
-          <Heading as="h3" variant="section-title">
-            {UI.projects[lang]}
-          </Heading>
+          <StampTitle delay={0.28}>
+            <Heading as="h3" variant="section-title">
+              {UI.projects[lang]}
+            </Heading>
+          </StampTitle>
           <Projects repos={github.projects} />
         </Section>
 
         <Section delay={0.3}>
-          <Heading as="h3" variant="section-title">
-            {UI.onTheWeb[lang]}
-          </Heading>
+          <StampTitle delay={0.38}>
+            <Heading as="h3" variant="section-title">
+              {UI.onTheWeb[lang]}
+            </Heading>
+          </StampTitle>
           <List
             display="flex"
             flexWrap="wrap"

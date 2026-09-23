@@ -3,6 +3,7 @@ import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useInterfaceLang } from '../../lib/interface-lang'
 import { UI } from '../../lib/interface-labels'
+import { markEntered } from '../../lib/entered'
 
 const mono =
   "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'M PLUS Rounded 1c', monospace"
@@ -54,7 +55,13 @@ const EnterOverlay = () => {
     }
   }, [entered])
 
-  const enter = () => setEntered(true)
+  // Vào trại: mở khóa veil + bắn tín hiệu để dàn dựng choreography reveal
+  // (hero, Section cascade, stamp chips — xem lib/entered.js) chạy đúng lúc
+  // veil tan, thay vì chạy phía sau lớp mờ.
+  const enter = () => {
+    markEntered()
+    setEntered(true)
+  }
 
   return (
     <AnimatePresence>

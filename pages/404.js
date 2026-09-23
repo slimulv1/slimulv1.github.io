@@ -7,6 +7,7 @@ import {
   Button
 } from '@chakra-ui/react'
 import FujiDusk from '../components/ui/fuji-dusk'
+import StampTitle from '../components/ui/stamp-title'
 // Ngôn ngữ giao diện xoay vòng 10s + từ điển text (en/ja)
 import { useInterfaceLang } from '../lib/interface-lang'
 import { UI } from '../lib/interface-labels'
@@ -29,9 +30,13 @@ const NotFound = () => {
       </Box>
 
       <Box align="center" mt={8}>
-        <Heading as="h1" variant="section-title">
-          {UI.notFound.title[lang]}
-        </Heading>
+        {/* Chip "đóng dấu" — /404 không có màn che nên useEntered tự trả
+            true sau 1 frame → stamp in ngay khi vào trang, an toàn revealed */}
+        <StampTitle delay={0.1}>
+          <Heading as="h1" variant="section-title">
+            {UI.notFound.title[lang]}
+          </Heading>
+        </StampTitle>
       </Box>
 
       <Text

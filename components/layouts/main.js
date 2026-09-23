@@ -5,6 +5,7 @@ import NavBar from '../ui/navbar'
 import { Box, Container } from '@chakra-ui/react'
 import Footer from '../ui/footer'
 import VoxelDogLoader from '../three/voxel-dog-loader'
+import TrailProgress from '../ui/trail-progress'
 import { useInterfaceLang } from '../../lib/interface-lang'
 
 const LazyVoxelDog = dynamic(() => import('../three/voxel-dog'), {
@@ -48,6 +49,9 @@ const Main = ({ children }) => {
         <meta property="og:image" content="/images/card-campsite.png" />
         <title>{PAGE_TITLE.en}</title>
       </Head>
+
+      {/* Thanh "con đường mòn" tiến độ cuộn — ẩn khi prefers-reduced-motion */}
+      <TrailProgress />
 
       <NavBar />
 

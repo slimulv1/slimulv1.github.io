@@ -1,4 +1,5 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useInterfaceLang } from '../../lib/interface-lang'
 import { UI } from '../../lib/interface-labels'
 import FujiDusk from './fuji-dusk'
@@ -9,8 +10,17 @@ import FujiDusk from './fuji-dusk'
 // biến hình học en≡ja — cả 2 ngôn ngữ cùng độ cao cố định.
 const Footer = () => {
   const { lang } = useInterfaceLang()
+  // Fade-up nhẹ khi chân trang vào view (whileInView, once) — reduced →
+  // hiện ngay không trượt
+  const reduced = useReducedMotion()
   return (
     <Box align="center" mt={10} pb={2}>
+      <motion.div
+        initial={reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.7, ease: 'easeOut' }}
+      >
       <Box
         w="100%"
         maxW="container.md"
@@ -20,6 +30,7 @@ const Footer = () => {
       >
         <FujiDusk variant="footer" h={{ base: '120px', md: '170px' }} />
       </Box>
+      </motion.div>
 
       <Flex
         as="span"
