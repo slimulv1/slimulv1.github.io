@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { Text } from '@chakra-ui/react'
-import FootprintIcon from '../icons/footprint'
+import { Box, Text } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 
 const LogoBox = styled.span`
@@ -12,11 +11,11 @@ const LogoBox = styled.span`
   line-height: 20px;
   padding: 8px 10px;
 
-  > svg {
+  > img {
     transition: 200ms ease;
   }
 
-  &:hover > svg {
+  &:hover > img {
     transform: rotate(20deg);
   }
 
@@ -31,7 +30,18 @@ const Logo = () => {
   return (
     <Link href="/" scroll={false}>
       <LogoBox>
-        <FootprintIcon />
+        {/* Logo paw thay cho icon bàn chân cũ — ảnh PNG nền trong suốt,
+            hoạt động tốt trên cả theme sáng lẫn tối */}
+        <Box
+          as="img"
+          src="/images/logo.png"
+          alt=""
+          w="24px"
+          h="24px"
+          borderRadius="7px"
+          objectFit="cover"
+          aria-hidden="true"
+        />
         <Text
           color="camp.text"
           fontFamily="'Nunito', 'Kosugi Maru', sans-serif"
