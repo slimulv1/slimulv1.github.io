@@ -6,53 +6,34 @@ import {
   useColorModeValue
 } from '@chakra-ui/react'
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
+import { slotOf } from '../../lib/interface-lang'
 
-// Lời chào theo khung giờ trong ngày, mỗi khung có 3 ngôn ngữ (3 câu mỗi ngôn ngữ)
+// Lời chào theo khung giờ trong ngày, mỗi khung 2 ngôn ngữ × 3 câu
+// (giao diện chỉ còn en ↔ ja — đã xóa tiếng Việt)
 const GREETINGS = {
   morning: {
-    vi: ['Buổi sáng tốt lành', 'Trà sáng nhé?', 'Đi cắm trại thôi'],
     en: ['Good morning!', 'A cup of tea?', "Let's go camping!"],
     ja: ['おはよう', 'お茶にする？', 'キャンプ行こう！']
   },
   afternoon: {
-    vi: ['Chào buổi chiều', 'Thời tiết đẹp ghê', 'Nghỉ ngơi chút nào'],
     en: ['Good afternoon!', 'The weather is so nice.', 'Take a little break.'],
     ja: ['こんにちは', '天気がいいね', 'ちょっと休もう']
   },
   evening: {
-    vi: ['Buổi tối vui vẻ', 'Đốt lửa trại nha', 'Nghe nhạc nền đi ~'],
     en: ['Good evening!', 'Campfire time.', 'Enjoy the background music ~'],
     ja: ['こんばんは', '焚き火の時間だよ', '音楽を聴こう〜']
   },
   night: {
-    vi: ['Ngủ ngon nhé', 'Còn thức à?', 'Mai gặp lại nhé'],
     en: ['Good night...', 'Still awake?', 'See you tomorrow!'],
     ja: ['おやすみ...', 'まだ起きてるの？', 'また明日ね']
   }
 }
 
-const slotOf = h =>
-  h < 5
-    ? 'night'
-    : h < 11
-      ? 'morning'
-      : h < 17
-        ? 'afternoon'
-        : h < 22
-          ? 'evening'
-          : 'night'
-
-// Vòng lặp trong khung giờ: vi[0..2] → en[0..2] → ja[0..2] → quay lại vi[0]
-const pool = slot => [
-  ...GREETINGS[slot].vi,
-  ...GREETINGS[slot].en,
-  ...GREETINGS[slot].ja
-]
-
 /**
  * Nhân vật góc: Rin (Yuru Camp△) cố định góc dưới-phải — hover
  * thấy tooltip "Say hi" trên đầu, click → bounce + speech bubble chào theo
- * khung giờ trong ngày, bấm liên tục chạy hết câu Việt → Anh → Nhật → lại Việt.
+ * khung giờ trong ngày, bấm liên tục xoay trong 3 câu của NGÔN NGỮ ĐANG
+ * HIỂN THỊ; đổi ngôn ngữ giao diện → vòng xoay reset từ đầu theo ngôn ngữ mới.
  * Rin có idle-float nhẹ ("thở") và entrance mượt khi load; mọi chuyển động
  * tôn trọng prefers-reduced-motion.
  *
@@ -60,8 +41,10 @@ const pool = slot => [
  * vùng Discord và các link "On the web": hover/chạm → bubble hiện nội dung đó (「...」),
  * rời chuột / vuốt → ẩn ngay.
  *
- * Lắng nghe "rin:lang" (provider giao diện xoay vòng 10s): hiện tên ngôn ngữ
- * viết bằng chính ngôn ngữ đó trên đầu Rin, giống tooltip "Say hi".
+ * Lắng nghe "rin:lang" { name, lang } (provider giao diện xoay vòng 10s):
+ * hiện tên ngôn ngữ viết bằng chính ngôn ngữ đó trên đầu Rin (giống tooltip
+ * "Say hi") + đồng bộ langRef. Cùng thời điểm nghe "rin:greet" { lang, slot }:
+ * Rin TỰ hiện câu chào mới theo ngôn ngữ vừa chuyển — bubble đồng bộ giao diện.
  */
 const CornerRin = () => {
   const [bubble, setBubble] = useState(null)
@@ -77,8 +60,12 @@ const CornerRin = () => {
   )
   const controls = useAnimationControls()
   const idx = useRef(0)
-  const slotRef = useRef(null)
   const bubbleTimer = useRef(null)
+  // Đồng bộ bằng sự kiện (không context): langRef = ngôn ngữ đang hiển thị;
+  // lastLang/lastSlot = nhóm câu của lần chào gần nhất → biết khi nào reset xoay.
+  const langRef = useRef('en')
+  const lastLang = useRef(null)
+  const lastSlot = useRef(null)
   // Entrance chạy sau mount 1 frame: server và client hydrate cùng render
   // opacity 0 (khớp style) → setMounted(true) mới animate — tránh React
   // hydration mismatch warning khi framer lỡ animate giữa SSR và hydrate.
@@ -117,9 +104,12 @@ const CornerRin = () => {
     bubbleTimer.current = setTimeout(() => setBubble(null), ms)
   }
 
-  const greet = () => {
+  // gLang/gSlot: bỏ trống → theo langRef + khung giờ hiện tại (bấm nút).
+  // opts.random: tự chào chọn câu ngẫu nhiên; opts.bounce: mặc định có bounce.
+  const greet = (gLang, gSlot, opts = {}) => {
+    const { random = false, bounce = true } = opts
     // bounce — cùng keyframes nade-bounce của nadeshiko, thêm xoay nhẹ cho "bồng bềnh"
-    if (!reduced) {
+    if (bounce && !reduced) {
       controls.start({
         y: [0, -14, 0, -5, 0],
         scale: [1, 1.06, 0.97, 1.02, 1],
@@ -127,25 +117,29 @@ const CornerRin = () => {
         transition: { duration: 0.55, ease: 'easeInOut' }
       })
     }
-    const slot = slotOf(new Date().getHours())
-    const p = pool(slot)
-    // sang khung giờ mới → bắt đầu lại từ câu Việt đầu tiên của khung này
-    if (slotRef.current !== slot) {
-      slotRef.current = slot
-      idx.current = 0
+    const lang = typeof gLang === 'string' ? gLang : langRef.current
+    const slot = gSlot || slotOf(new Date().getHours())
+    const list = GREETINGS[slot][lang]
+    // đổi ngôn ngữ hoặc sang khung giờ mới → reset từ câu đầu của nhóm mới;
+    // ngược lại xoay tiếp trong 3 câu của cùng ngôn ngữ + khung giờ.
+    if (lastLang.current !== lang || lastSlot.current !== slot) {
+      lastLang.current = lang
+      lastSlot.current = slot
+      idx.current = random ? Math.floor(Math.random() * list.length) : 0
     } else {
-      idx.current = (idx.current + 1) % p.length
+      idx.current = (idx.current + 1) % list.length
     }
-    showBubble(p[idx.current])
+    showBubble(list[idx.current])
   }
 
   useEffect(() => {
-    // tự chào 1 lần: ngẫu nhiên một câu VI trong khung giờ hiện tại (như nadeshiko)
+    // Tự chào 1 lần khi load: ngẫu nhiên một câu EN trong khung giờ hiện tại
+    // (giao diện mặc định EN — như nadeshiko)
     const t = setTimeout(() => {
-      const slot = slotOf(new Date().getHours())
-      slotRef.current = slot
-      idx.current = Math.floor(Math.random() * GREETINGS[slot].vi.length)
-      showBubble(pool(slot)[idx.current])
+      greet('en', slotOf(new Date().getHours()), {
+        random: true,
+        bounce: false
+      })
     }, 500)
     return () => {
       clearTimeout(t)
@@ -174,14 +168,16 @@ const CornerRin = () => {
     }
   }, [])
 
-  // Giao diện xoay ngôn ngữ (provider bắn "rin:lang"): hiện tên ngôn ngữ
-  // (viết bằng chính ngôn ngữ đó) trên đầu Rin, giống tooltip "Say hi",
-  // tự ẩn sau ~2.2s — không đụng bubble chào/phía bên của Rin.
+  // Giao diện xoay ngôn ngữ (provider bắn "rin:lang" { name, lang }): hiện tên
+  // ngôn ngữ (viết bằng chính ngôn ngữ đó) trên đầu Rin, giống tooltip "Say hi",
+  // tự ẩn sau ~2.2s — không đụng bubble chào. Đồng thời ghi langRef để bấm nút
+  // luôn xoay đúng 3 câu của ngôn ngữ đang hiển thị.
   useEffect(() => {
     const onLang = e => {
-      const name = e && e.detail
-      if (!name) return
-      setLangNote(name)
+      const d = e && e.detail
+      if (!d) return
+      if (d.lang) langRef.current = d.lang
+      setLangNote(d.name)
       clearTimeout(langTimer.current)
       langTimer.current = setTimeout(() => setLangNote(null), 2200)
     }
@@ -190,6 +186,19 @@ const CornerRin = () => {
       window.removeEventListener('rin:lang', onLang)
       clearTimeout(langTimer.current)
     }
+  }, [])
+
+  // Cùng thời điểm đổi ngôn ngữ, provider bắn "rin:greet" { lang, slot }:
+  // Rin TỰ hiện câu chào mới theo ngôn ngữ vừa chuyển (không bounce — nhẹ nhàng
+  // như lúc tự chào khi load) → bubble luôn đồng bộ với giao diện.
+  useEffect(() => {
+    const onGreet = e => {
+      const d = e && e.detail
+      if (!d || !d.lang || !GREETINGS[d.slot]) return
+      greet(d.lang, d.slot, { random: true, bounce: false })
+    }
+    window.addEventListener('rin:greet', onGreet)
+    return () => window.removeEventListener('rin:greet', onGreet)
   }, [])
 
   return (
@@ -276,8 +285,8 @@ const CornerRin = () => {
           animate={controls}
           type="button"
           data-tooltip="Say hi"
-          aria-label="Nói chuyện với Rin"
-          onClick={greet}
+          aria-label="Talk to Rin"
+          onClick={() => greet()}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()

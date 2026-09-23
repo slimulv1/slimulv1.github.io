@@ -7,27 +7,27 @@ import {
 import { DiscordBadges } from './discord-badges'
 // Bubble "Rin xem chung" dùng chung (xem lib/rin-peek.js)
 import { rinPeek, rinClear } from '../../lib/rin-peek'
-// Ngôn ngữ giao diện xoay vòng 15s + từ điển text (vi/en/ja)
+// Ngôn ngữ giao diện xoay vòng 10s + từ điển text (en/ja)
 import { useInterfaceLang } from '../../lib/interface-lang'
 import { UI } from '../../lib/interface-labels'
 
-// Trạng thái: nhãn theo 3 thứ tiếng, đổi theo vòng quay giao diện 15s;
+// Trạng thái: nhãn theo 2 thứ tiếng, đổi theo vòng quay giao diện 10s;
 // màu dot giữ theo Discord chuẩn. Export để status-dot dùng chung.
 export const STATUS = {
   online: {
-    labels: { vi: 'Trực tuyến', en: 'Online', ja: 'オンライン' },
+    labels: { en: 'Online', ja: 'オンライン' },
     color: '#73daca'
   },
   idle: {
-    labels: { vi: 'Chờ chút', en: 'Idle', ja: '退席中' },
+    labels: { en: 'Idle', ja: '退席中' },
     color: '#faa61a'
   },
   dnd: {
-    labels: { vi: 'Không làm phiền', en: 'Do not disturb', ja: '取り込み中' },
+    labels: { en: 'Do not disturb', ja: '取り込み中' },
     color: '#f04747'
   },
   offline: {
-    labels: { vi: 'Ngoại tuyến', en: 'Offline', ja: 'オフライン' },
+    labels: { en: 'Offline', ja: 'オフライン' },
     color: '#9b9ba5'
   }
 }
@@ -96,7 +96,7 @@ const StatusBar = () => {
   const muted = useColorModeValue('gray.600', 'whiteAlpha.700')
   const pillBg = useColorModeValue('blackAlpha.200', 'whiteAlpha.200')
   const pillBorder = useColorModeValue('blackAlpha.300', 'whiteAlpha.300')
-  // Ngôn ngữ theo vòng quay chung của giao diện (15s): Việt → Anh → Nhật
+  // Ngôn ngữ theo vòng quay chung của giao diện (10s): Anh ↔ Nhật
   const { lang } = useInterfaceLang()
 
   if (!presence) {
@@ -239,7 +239,7 @@ const StatusBar = () => {
         >
           <Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap">
             <DiscordDot color={status.color} pulse={online} />
-            {/* key=label → đổi ngôn ngữ theo vòng quay 15s, remount span chạy micro-fade 0.25s mượt */}
+            {/* key=label → đổi ngôn ngữ theo vòng quay 10s, remount span chạy micro-fade 0.25s mượt */}
             <motion.span
               key={status.labels[lang]}
               initial={{ opacity: 0, y: 2 }}

@@ -3,7 +3,7 @@ import { Text, useColorModeValue } from '@chakra-ui/react'
 import { useInterfaceLang } from '../../lib/interface-lang'
 
 // Tên tháng theo ngôn ngữ giao diện đang xoay vòng
-const LOCALE = { vi: 'vi-VN', en: 'en-US', ja: 'ja-JP' }
+const LOCALE = { en: 'en-US', ja: 'ja-JP' }
 
 const VnClock = () => {
   const { lang } = useInterfaceLang()
