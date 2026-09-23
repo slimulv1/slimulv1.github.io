@@ -113,20 +113,43 @@ const ProjectCard = ({ repo, index = 0 }) => {
             boxShadow: '0 0 0 1.5px rgba(115, 218, 202, 0.3)'
           }}
         >
-          {/* Header: đường dẫn kiểu prompt + star + mũi tên */}
+          {/* Header: số trạm dọc đường + prompt + star + mũi tên */}
           <Flex justify="space-between" align="center" gap={2}>
-            <Text
-              fontFamily={mono}
-              fontSize="sm"
-              fontWeight="bold"
-              color={nameColor}
-              noOfLines={1}
-            >
-              <Text as="span" color={pathColor} mr={1} fontWeight="normal">
-                △ ~/
+            <Flex align="center" gap={2} minW={0} flex="1">
+              {/* Số trạm (rally checkpoint) — vòng tròn nét đứt; không đổi
+                  theo ngôn ngữ nên an toàn với bất biến en≡ja */}
+              <Box
+                flexShrink={0}
+                w="24px"
+                h="24px"
+                borderRadius="full"
+                border="1.5px dashed"
+                borderColor="camp.ember"
+                color="camp.ember"
+                fontFamily={mono}
+                fontSize="10px"
+                fontWeight={800}
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                title={`camp site ${index + 1}`}
+              >
+                {String(index + 1).padStart(2, '0')}
+              </Box>
+              <Text
+                fontFamily={mono}
+                fontSize="sm"
+                fontWeight="bold"
+                color={nameColor}
+                noOfLines={1}
+                minW={0}
+              >
+                <Text as="span" color={pathColor} mr={1} fontWeight="normal">
+                  △ ~/
+                </Text>
+                {repo.name}
               </Text>
-              {repo.name}
-            </Text>
+            </Flex>
             <Flex align="center" gap={2.5} flexShrink={0}>
               {repo.stars > 0 && (
                 <Flex
@@ -204,6 +227,7 @@ const listsEqual = (a, b) =>
   a.every((r, i) => repoSignature(r) === repoSignature(b[i]))
 
 const Projects = ({ repos = pinnedRepos }) => {
+  const { lang } = useInterfaceLang()
   // Dữ liệu build (getStaticProps) giữ làm khung SSR/không-JS —
   // rồi lặng lẽ thay bằng dữ liệu pin mới nhất (lần load + định kỳ).
   const [list, setList] = useState(repos)
@@ -246,11 +270,44 @@ const Projects = ({ repos = pinnedRepos }) => {
   }, [])
 
   return (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-      {list.map((repo, i) => (
-        <ProjectCard key={repo.name} repo={repo} index={i} />
-      ))}
-    </SimpleGrid>
+    <>
+      {/* Nhãn hành trình: tem "outdoor activity record" (tên sổ trong bộ:
+          野外活動記録) giữa hai đường chấm — các repo như trạm dọc đường */}
+      <Flex alignItems="center" columnGap={3} mb={5} userSelect="none">
+        <Box flex="1" minW={0} h={0} borderTop="1.5px dashed" borderColor="camp.lineStrong" />
+        <Flex
+          as="span"
+          alignItems="center"
+          columnGap={2}
+          px={3}
+          py={0.5}
+          borderRadius="full"
+          border="1.5px dashed"
+          borderColor="camp.ember"
+          bg="camp.emberSoft"
+          color="camp.ember"
+          fontFamily={mono}
+          fontSize="xs"
+          fontWeight={800}
+          letterSpacing="0.06em"
+          whiteSpace="nowrap"
+          flexShrink={0}
+          transform="rotate(-1.2deg)"
+        >
+          <Text as="span" aria-hidden="true">
+            ⊿
+          </Text>
+          <Text as="span">{UI.routeTitle[lang]}</Text>
+        </Flex>
+        <Box flex="1" minW={0} h={0} borderTop="1.5px dashed" borderColor="camp.lineStrong" />
+      </Flex>
+
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+        {list.map((repo, i) => (
+          <ProjectCard key={repo.name} repo={repo} index={i} />
+        ))}
+      </SimpleGrid>
+    </>
   )
 }
 

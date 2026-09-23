@@ -202,7 +202,23 @@ const StatusBar = () => {
               <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }} color="camp.text">
                 {name}
               </Text>
-              <DiscordBadges publicFlags={user.public_flags} />
+              {/* Huy hiệu Discord đóng khung "thẻ tem sưu tầm" (viền nét đứt) —
+                  motif stamp rally; độ cao không đổi theo ngôn ngữ → an toàn en≡ja */}
+              {user.public_flags ? (
+                <Flex
+                  as="span"
+                  alignItems="center"
+                  px={1.5}
+                  py="2px"
+                  borderRadius="full"
+                  border="1.5px dashed"
+                  borderColor="camp.lineStrong"
+                  bg={pillBg}
+                  title="Collected trail stamps"
+                >
+                  <DiscordBadges publicFlags={user.public_flags} />
+                </Flex>
+              ) : null}
               {guild && guild.identity_enabled ? (
                 <Flex
                   alignItems="center"
