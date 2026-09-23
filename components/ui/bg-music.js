@@ -22,7 +22,8 @@ const BgMusic = () => {
     const audio = audioRef.current
     if (!audio) return
 
-    audio.volume = 0.45
+    // 0.75 = tăng từ 0.45 lên 0.75 (volume nhạc nền theo yêu cầu)
+    audio.volume = 0.75
 
     let unlocked = false
 
