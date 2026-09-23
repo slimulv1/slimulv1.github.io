@@ -6,7 +6,9 @@ import { Box, Container } from '@chakra-ui/react'
 import Footer from '../ui/footer'
 import VoxelDogLoader from '../three/voxel-dog-loader'
 import TrailProgress from '../ui/trail-progress'
+import ViewTransitionStyles from '../ui/view-transition-styles'
 import { useInterfaceLang } from '../../lib/interface-lang'
+import { initSmoothScroll, destroySmoothScroll } from '../../lib/smooth-scroll'
 
 const LazyVoxelDog = dynamic(() => import('../three/voxel-dog'), {
   ssr: false,
@@ -30,6 +32,13 @@ const Main = ({ children }) => {
     }
   }, [lang])
 
+  // Cuộn mượt Lenis (tự bỏ khi prefers-reduced-motion) — sống qua mọi route
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    initSmoothScroll()
+    return () => destroySmoothScroll()
+  }, [])
+
   return (
     <Box as="main" pb={8}>
       <Head>
@@ -49,6 +58,9 @@ const Main = ({ children }) => {
         <meta property="og:image" content="/images/card-campsite.png" />
         <title>{PAGE_TITLE.en}</title>
       </Head>
+
+      {/* CSS cho View Transitions API khi đổi ngày ⇄ đêm trại */}
+      <ViewTransitionStyles />
 
       {/* Thanh "con đường mòn" tiến độ cuộn — ẩn khi prefers-reduced-motion */}
       <TrailProgress />

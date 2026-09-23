@@ -1,4 +1,5 @@
 import { Box, useColorModeValue } from '@chakra-ui/react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 /**
  * FujiDusk — dải cảnh núi Phú Sĩ chủ đề Yuru Camp△, CÓ 2 bối cảnh theo theme:
@@ -12,6 +13,13 @@ import { Box, useColorModeValue } from '@chakra-ui/react'
  * Cùng một hình học (viewBox 0 0 800 320) cho cả 2 bối cảnh → độ cao band và
  * bố cục không đổi; chỉ đổi màu/chi tiết. Thuần trang trí: aria-hidden, không
  * chứa text → không ảnh hưởng bất biến hình học en≡ja.
+ *
+ * AMBIENT (bãi trại "sống"): các chi tiết chuyển động nhẹ, transform/opacity
+ * only (GPU), chỉ chạy khi prefers-reduced-motion = no-preference:
+ *   - đêm: sao thấp nhấp nháy theo delay riêng + sao băng vạch ngang trời
+ *     (lặp ~13s) + ánh lửa trại bập bùng (band footer).
+ *   - ngày: 2 cụm mây trắng trôi qua lại chậm + chim bay ngang (lặp ~26s).
+ * Cực đại ~6-8 node SVG, không đụng layout → an toàn về hiệu năng.
  *
  * Props: variant = 'hero' | 'footer'; mọi prop khác đổ xuống <svg> (h, opacity...).
  */
@@ -43,13 +51,26 @@ const DAY = {
   meadow: '#b8cf8f'
 }
 
+// Sao thấp nhấp nháy (tọa độ nằm trong vùng crop hiển thị của cả hero lẫn
+// footer — vùng y 150-260, x 190-610; tránh mây trôi và tiền cảnh núi)
+const LOW_STARS = [
+  { cx: 470, cy: 178, r: 1.8, dur: 3.8, delay: 0 },
+  { cx: 548, cy: 236, r: 1.5, dur: 4.4, delay: 1.1 },
+  { cx: 585, cy: 192, r: 1.6, dur: 3.2, delay: 2.2 },
+  { cx: 392, cy: 252, r: 1.4, dur: 5.0, delay: 0.6 }
+]
+
+// Cờ bunting — dây cờ rợp mép trên band footer (xem footer.js)
+
 const FujiDusk = ({ variant = 'hero', ...props }) => {
   // id gradient riêng theo variant tránh trùng lặp id khi trang có 2 bản
   const skyId = `yc-sky-${variant}`
+  const meteorId = `yc-meteor-${variant}`
   const showTent = variant === 'footer'
   // Bối cảnh theo theme đang hoạt động: tối = hoàng hôn, sáng = ban ngày
   const isDark = useColorModeValue(false, true)
   const P = isDark ? DUSK : DAY
+  const reduced = useReducedMotion()
 
   return (
     <Box
@@ -68,6 +89,11 @@ const FujiDusk = ({ variant = 'hero', ...props }) => {
           <stop offset="42%" stopColor={P.sky[1]} />
           <stop offset="72%" stopColor={P.sky[2]} />
           <stop offset="100%" stopColor={P.sky[3]} />
+        </linearGradient>
+        {/* Vệt sao băng: đầu (bên phải) đặc trắng → đuôi trong suốt */}
+        <linearGradient id={meteorId} x1="0" y1="0" x2="1" y2="0.35">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
         </linearGradient>
       </defs>
       <rect width="800" height="320" fill={`url(#${skyId})`} />
@@ -88,6 +114,57 @@ const FujiDusk = ({ variant = 'hero', ...props }) => {
             <circle cx="360" cy="196" r="1.7" />
             <circle cx="512" cy="128" r="1.5" opacity="0.7" />
           </g>
+          {/* AMBIENT ĐÊM: sao thấp nhấp nháy + sao băng */}
+          {!reduced && (
+            <g>
+              <g fill={P.celestial}>
+                {LOW_STARS.map(s => (
+                  <motion.circle
+                    key={`${s.cx}-${s.cy}`}
+                    cx={s.cx}
+                    cy={s.cy}
+                    r={s.r}
+                    animate={{ opacity: [0.15, 0.95, 0.15] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: s.dur,
+                      delay: s.delay,
+                      ease: 'easeInOut'
+                    }}
+                  />
+                ))}
+              </g>
+              {/* Sao băng: vệt trắng quét ngang khoảng trời bên trái núi (x 210-300
+                  trong cửa sổ hiển thị), lặp ~14.5s — delay 5.5s để người xem
+                  không bỏ lỡ khung hình đầu */}
+              <motion.g
+                initial={{ x: 0, y: 0, opacity: 0 }}
+                animate={{
+                  x: [-24, 46],
+                  y: [-8, 6],
+                  opacity: [0, 1, 1, 0]
+                }}
+                transition={{
+                  duration: 1.5,
+                  delay: 5.5,
+                  repeat: Infinity,
+                  repeatDelay: 8,
+                  ease: 'easeIn'
+                }}
+              >
+                <line
+                  x1="230"
+                  y1="163"
+                  x2="262"
+                  y2="173"
+                  stroke={`url(#${meteorId})`}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <circle cx="262" cy="173" r="1.7" fill="#ffffff" />
+              </motion.g>
+            </g>
+          )}
         </g>
       ) : (
         <g>
@@ -110,6 +187,71 @@ const FujiDusk = ({ variant = 'hero', ...props }) => {
               <ellipse cx="95" cy="191" rx="12" ry="6" />
             </g>
           </g>
+          {/* AMBIENT NGÀY: mây thấp trôi chậm + chim bay ngang */}
+          {!reduced && (
+            <g>
+              <g fill={P.celestial}>
+                <motion.g
+                  animate={reduced ? { x: 0 } : { x: [0, 20, 0] }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : { repeat: Infinity, duration: 22, ease: 'easeInOut' }
+                  }
+                  opacity="0.85"
+                >
+                  <ellipse cx="528" cy="214" rx="26" ry="9" />
+                  <ellipse cx="510" cy="207" rx="15" ry="8" />
+                  <ellipse cx="548" cy="209" rx="13" ry="7" />
+                </motion.g>
+                <motion.g
+                  animate={reduced ? { x: 0 } : { x: [0, -14, 0] }}
+                  transition={
+                    reduced
+                      ? { duration: 0 }
+                      : { repeat: Infinity, duration: 26, delay: 1.4, ease: 'easeInOut' }
+                  }
+                  opacity="0.7"
+                >
+                  <ellipse cx="600" cy="256" rx="20" ry="7" />
+                  <ellipse cx="584" cy="250" rx="11" ry="6" />
+                </motion.g>
+              </g>
+              {/* Chim bay ngang bầu trời, lặp ~26s (delay 3s + repeatDelay) */}
+              <motion.g
+                initial={{ x: 0, opacity: 0 }}
+                animate={{
+                  x: [-450, 130],
+                  y: [0, 6],
+                  opacity: [0, 0.9, 0.9, 0]
+                }}
+                transition={{
+                  duration: 16,
+                  delay: 3,
+                  repeat: Infinity,
+                  repeatDelay: 10,
+                  ease: 'linear'
+                }}
+              >
+                <g transform="translate(620,196)">
+                  <path
+                    d="M0 0 q8 -9 15 0"
+                    fill="none"
+                    stroke="#8b9bab"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M15 0 q7 -10 14 0"
+                    fill="none"
+                    stroke="#8b9bab"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                  />
+                </g>
+              </motion.g>
+            </g>
+          )}
         </g>
       )}
 
@@ -133,14 +275,44 @@ const FujiDusk = ({ variant = 'hero', ...props }) => {
       </g>
       {showTent && (
         <g>
-          {/* Lều △ tiền cảnh — dark: lều đêm trên nền lửa trại rực;
+          {/* Lều △ tiền cảnh — dark: lều đêm trên nền lửa trại bập bùng;
               sáng: lều ban ngày trên đồng cỏ */}
           <path d="M318 320 L372 236 L426 320 Z" fill={P.tent} />
           <path d="M372 236 L372 320" stroke={P.tentLine} strokeWidth="2" />
           {isDark ? (
             <>
-              <circle cx="372" cy="300" r="30" fill={P.fire} opacity="0.30" />
-              <circle cx="372" cy="318" r="38" fill={P.fire} opacity="0.16" />
+              <motion.circle
+                cx="372"
+                cy="300"
+                r="30"
+                fill={P.fire}
+                animate={
+                  reduced
+                    ? { opacity: 0.3 }
+                    : { opacity: [0.26, 0.42, 0.3, 0.44, 0.26] }
+                }
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { repeat: Infinity, duration: 5.2, ease: 'easeInOut' }
+                }
+              />
+              <motion.circle
+                cx="372"
+                cy="318"
+                r="38"
+                fill={P.fire}
+                animate={
+                  reduced
+                    ? { opacity: 0.16 }
+                    : { opacity: [0.14, 0.24, 0.16, 0.26, 0.14] }
+                }
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { repeat: Infinity, duration: 5.2, delay: 0.5, ease: 'easeInOut' }
+                }
+              />
             </>
           ) : (
             <ellipse cx="372" cy="314" rx="58" ry="12" fill={P.meadow} opacity="0.85" />

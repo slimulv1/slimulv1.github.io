@@ -1,11 +1,48 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { flushSync } from 'react-dom'
 import { IconButton, useColorMode, useColorModeValue } from '@chakra-ui/react'
 import { SunIcon, MoonIcon } from '@chakra-ui/icons'
 
+/**
+ * ThemeToggleButton — đổi ngày ⇄ đêm trại.
+ *
+ * Công nghệ mới nhất: View Transitions API (Chrome/Edge 111+, Safari 18+).
+ * Bấm nút → toàn trang chuyển đổi theo hình tròn lan từ vị trí nút bấm
+ * (--vt-x/--vt-y ghi vào <html>, CSS trong view-transition-styles.js).
+ * Chakra v2 ghi class color-mode + data-theme ĐỒNG BỘ trong toggleColorMode,
+ * nên bọc trong flushSync() → startViewTransition bắt đúng snapshot 2 bối
+ * cảnh (ngày → đêm / đêm → ngày).
+ *
+ * Fallback: trình duyệt chưa hỗ trợ hoặc prefers-reduced-motion → toggle
+ * trực tiếp (không transition). Icon vẫn giữ micro-animation trượt+xoay cũ.
+ */
 const ThemeToggleButton = () => {
   const { toggleColorMode } = useColorMode()
   // prefers-reduced-motion: bỏ trượt lên/xuống khi đổi icon, chỉ còn fade
   const reduced = useReducedMotion()
+
+  const handleToggle = e => {
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const doc = typeof window !== 'undefined' ? window.document : null
+    if (doc && !reduce && typeof doc.startViewTransition === 'function') {
+      const r = e.currentTarget.getBoundingClientRect()
+      doc.documentElement.style.setProperty(
+        '--vt-x',
+        `${Math.round(r.left + r.width / 2)}px`
+      )
+      doc.documentElement.style.setProperty(
+        '--vt-y',
+        `${Math.round(r.top + r.height / 2)}px`
+      )
+      doc.startViewTransition(() => {
+        flushSync(() => toggleColorMode())
+      })
+    } else {
+      toggleColorMode()
+    }
+  }
 
   return (
     <AnimatePresence mode='wait' initial={false}>
@@ -21,7 +58,7 @@ const ThemeToggleButton = () => {
           aria-label="Toggle theme"
           colorScheme={useColorModeValue('teal', 'orange')}
           icon={useColorModeValue(<MoonIcon />, <SunIcon />)}
-          onClick={toggleColorMode}
+          onClick={handleToggle}
         ></IconButton>
       </motion.div>
     </AnimatePresence>

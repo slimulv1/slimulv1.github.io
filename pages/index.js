@@ -9,7 +9,14 @@ import {
   ListItem,
   useColorModeValue
 } from '@chakra-ui/react'
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring
+} from 'framer-motion'
 import Layout from '../components/layouts/home'
 import Section from '../components/ui/section'
 import StampTitle from '../components/ui/stamp-title'
@@ -38,9 +45,31 @@ export async function getStaticProps() {
 
 // Link "On the web": chip pill "thẻ tên móc vào dây trại" — hover/touch → Rin
 // hiện bubble 「@handle」 (tương tự card project). Markup giữ handler peek/clear.
-const WebLink = ({ href, icon: Icon, label }) => (
-  <ListItem>
-    <Link
+// Thêm hiệu ứng "nam châm": pill bị hút nhẹ theo con trỏ (spring mượt, chỉ
+// mousemove — touch/keyboard không kích hoạt); prefers-reduced-motion → tắt.
+const WebLink = ({ href, icon: Icon, label }) => {
+  const reduced = useReducedMotion()
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const sx = useSpring(mx, { stiffness: 260, damping: 18, mass: 0.5 })
+  const sy = useSpring(my, { stiffness: 260, damping: 18, mass: 0.5 })
+  const magnet = e => {
+    const r = e.currentTarget.getBoundingClientRect()
+    mx.set((e.clientX - (r.left + r.width / 2)) * 0.22)
+    my.set((e.clientY - (r.top + r.height / 2)) * 0.32)
+  }
+  const release = () => {
+    mx.set(0)
+    my.set(0)
+  }
+  return (
+    <ListItem>
+      <motion.span
+        style={{ display: 'inline-flex', x: sx, y: sy, willChange: 'transform' }}
+        onMouseMove={reduced ? undefined : magnet}
+        onMouseLeave={reduced ? undefined : release}
+      >
+      <Link
       href={href}
       target="_blank"
       onMouseEnter={() => rinPeek(label)}
@@ -75,8 +104,10 @@ const WebLink = ({ href, icon: Icon, label }) => (
       </Box>
       {label}
     </Link>
-  </ListItem>
-)
+      </motion.span>
+    </ListItem>
+  )
+}
 
 // Vòng nhẫn gradient lều→lửa quanh avatar + △ trôi nhẹ — màu từ semantic token
 
@@ -224,7 +255,20 @@ const Home = ({ github }) => {
         <Section delay={0.1}>
           <StampTitle delay={0.18}>
             <Heading as="h3" variant="section-title">
-              I ♥
+              I{' '}
+              {/* Trái tim đập nhẹ — aria-hidden, gated prefers-reduced-motion */}
+              <motion.span
+                aria-hidden="true"
+                style={{ display: 'inline-block' }}
+                animate={reduced ? { scale: 1 } : { scale: [1, 1.22, 1] }}
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { repeat: Infinity, duration: 3.4, ease: 'easeInOut' }
+                }
+              >
+                ♥
+              </motion.span>
             </Heading>
           </StampTitle>
           {/* Sticky-note giấy vàng: "marry your bed" */}
